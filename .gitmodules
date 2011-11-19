@@ -1,3 +1,6 @@
 [submodule "vendor/unrequire"]
 	path = vendor/unrequire
 	url = git@github.com:sibblingz/unrequirejs.git
+[submodule "vendor/q"]
+	path = vendor/q
+	url = git@github.com:strager/q.git

@@ -14,6 +14,16 @@
 <script src="vendor/unrequire/lib/unrequire.js"></script>
 
 <script>
+// Some global functions to make my life sane
+function hasOwn(object, property) {
+    return Object.prototype.hasOwnProperty.call(object, property);
+}
+
+function die(message) {
+    console.assert(false, message);
+    throw new Error(message);
+}
+
 (function () {
     var isReady = false;
     var onReady = null;
@@ -21,14 +31,19 @@
     window.main = function main() {
         isReady = true;
         if (onReady) {
-            onReady();
+            onReady(sp.stage);
         }
     };
 
-    require({ baseUrl: 'src' }, [ 'main' ], function (main) {
+    require({
+        baseUrl: 'src',
+        aliases: {
+            'q': './vendor/q/q'
+        }
+    }, [ 'main' ], function (main) {
         onReady = main;
         if (isReady) {
-            onReady();
+            onReady(sp.stage);
         }
     });
 }());
