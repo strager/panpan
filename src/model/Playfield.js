@@ -11,5 +11,11 @@ define([ 'model/block' ], function (block) {
         this.blocks = blocks;
     }
 
+    PlayfieldModel.fromJSON = function fromJSON(json) {
+        var m = new PlayfieldModel(json.width, json.height);
+        m.blocks = json.blocks;
+        return m;
+    };
+
     return PlayfieldModel;
 });

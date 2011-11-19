@@ -1,9 +1,8 @@
-define([ 'model/Playfield', 'view/Playfield' ], function (PlayfieldModel, PlayfieldView) {
+define([ 'model/Playfield', 'view/Playfield', 'data/levels' ], function (PlayfieldModel, PlayfieldView, levels) {
     function game(stage) {
-        var pfm = new PlayfieldModel(8, 20);
-        pfm.blocks[0] = 2;
-        pfm.blocks[2] = 2;
-        pfm.blocks[5] = 1;
+        var currentLevel = levels[0];
+
+        var pfm = PlayfieldModel.fromJSON(currentLevel);
 
         var pfv = new PlayfieldView(pfm);
         stage.addChild(pfv.mc);
