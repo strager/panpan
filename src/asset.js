@@ -32,10 +32,11 @@ define([ 'q' ], function (Q) {
         var assetName = match[3];
 
         if (hasOwn(loads, containerFilename)) {
-            return pullAsset(loads[name], assetName);
+            return pullAsset(loads[containerFilename], assetName);
         }
 
         var containerDefer = Q.defer();
+        loads[containerFilename] = containerDefer.promise;
 
         var loader = new sp.Loader();
         loader.contentLoaderInfo.addEventListener(sp.Event.COMPLETE, function handler(event) {

@@ -24,6 +24,22 @@ function die(message) {
     throw new Error(message);
 }
 
+function extendDefault(target, defaults, options) {
+    if (typeof options !== 'object' || !object) {
+        options = { };
+    }
+
+    Object.keys(defaults).forEach(function (key) {
+        if (hasOwn(options, key)) {
+            target[key] = options[key];
+        } else {
+            target[key] = defaults[key];
+        }
+    });
+
+    return target;
+}
+
 (function () {
     var isReady = false;
     var onReady = null;
