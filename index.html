@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>PanPan</title>
+
+</head>
+<body>
+
+<div id="flashContent" style="width: 800px; height: 480px;"></div>
+
+<script src="spaceport/spaceport.js"></script>
+<script>sp.bridge.swfPath = 'spaceport/Spaceport.swf';</script>
+<script src="vendor/unrequire/lib/unrequire.js"></script>
+
+<script>
+(function () {
+    var isReady = false;
+    var onReady = null;
+
+    window.main = function main() {
+        isReady = true;
+        if (onReady) {
+            onReady();
+        }
+    };
+
+    require({ baseUrl: 'src' }, [ 'main' ], function (main) {
+        onReady = main;
+        if (isReady) {
+            onReady();
+        }
+    });
+}());
+</script>
+
+</body>
+</html>

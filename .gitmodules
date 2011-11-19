@@ -1,0 +1,3 @@
+[submodule "vendor/unrequire"]
+	path = vendor/unrequire
+	url = git@github.com:sibblingz/unrequirejs.git
