@@ -34,8 +34,8 @@ define([ 'model/block' ], function (block) {
     };
 
     PlayfieldModel.prototype.moveCursorBy = function moveCursorBy(dx, dy) {
-        this.cursorX += dx;
-        this.cursorY += dy;
+        this.cursorX = Math.min(Math.max(this.cursorX + dx, 0), this.width - 2);
+        this.cursorY = Math.min(Math.max(this.cursorY + dy, 0), this.height - 1);
     };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {

@@ -25,18 +25,24 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         var PlayfieldMovieClip = asset.get(this.themeFile + ':Playfield');
         this.mc = new PlayfieldMovieClip();
 
-        this.mcBlocks = new sp.Sprite();
-        this.mcBlocks.x = this.mc.corner.x;
-        this.mcBlocks.y = this.mc.corner.y;
-
-        // wtb replaceChild
-        var blocksIndex = this.mc.getChildIndex(this.mc.corner);
+        var cornerX = this.mc.corner.x;
+        var cornerY = this.mc.corner.y;
         this.mc.removeChild(this.mc.corner);
-        this.mc.addChildAt(this.mcBlocks, blocksIndex);
+
+        this.mcBlocks = new sp.Sprite();
+        this.mcBlocks.x = cornerX;
+        this.mcBlocks.y = cornerY;
 
         var CursorMovieClip = asset.get(this.themeFile + ':Cursor');
         this.cursor = new CursorMovieClip();
-        this.mc.addChild(this.cursor);
+
+        this.mcOverlay = new sp.Sprite();
+        this.mcOverlay.x = cornerX;
+        this.mcOverlay.y = cornerY;
+        this.mcOverlay.addChild(this.cursor);
+
+        this.mc.addChild(this.mcBlocks);
+        this.mc.addChild(this.mcOverlay);
     }
 
     PlayfieldView.prototype.placeBlock = function placeBlock(x, y, block) {
