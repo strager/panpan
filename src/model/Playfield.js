@@ -145,7 +145,7 @@ define([ 'model/block' ], function (blockModel) {
 
     PlayfieldModel.fromJSON = function fromJSON(json) {
         var m = new PlayfieldModel(json.width, json.height);
-        m.blocks = json.blocks;
+        m.blocks = json.blocks.slice();
         m.maxTurns = json.maxTurns;
         return m;
     };

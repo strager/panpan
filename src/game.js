@@ -1,10 +1,10 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine) {
+define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'ui' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, ui) {
     var GameStateMachine = stateMachine([
-        { name: 'start', from: 'none', to: 'playing' },
-        { name: 'fail',  from: 'playing', to: 'failed' },
-        { name: 'continue', from: 'failed', to: 'playing' },
-        { name: 'win', from: 'playing', to: 'won' },
-        { name: 'continue', from: 'win', to: 'none' },
+        { name: 'start',    from: 'none',    to: 'playing' },
+        { name: 'fail',     from: 'playing', to: 'failed'  },
+        { name: 'retry',    from: 'failed',  to: 'playing' },
+        { name: 'win',      from: 'playing', to: 'won'     },
+        { name: 'continue', from: 'won',     to: 'none'    }
     ]);
 
     function game(stage) {
@@ -46,37 +46,56 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
 
             if (controller.isSettled()) {
                 if (controller.isWin()) {
-                    console.log('win');
                     sm.win();
                 } else if (controller.isLoss()) {
-                    console.log('fail');
                     sm.fail();
                 }
             }
         }, 500);
 
+        function load() {
+            view.resetBlocks();
+            var level = levels[currentLevelIndex];
+            if (!level) {
+                die("Failed to load level " + currentLevelIndex);
+            }
+
+            var model = PlayfieldModel.fromJSON(level);
+            controller = new PlayfieldController(model, view);
+        }
+
         var sm = new GameStateMachine('none', {
             enter_failed: function enter_failed() {
+                controller = null;
+
                 view.mc.gotoAndPlay('failed');
+                var button = ui.button(view.mc.retryButton, function () {
+                    sm.retry();
+                    button.remove();
+                });
             },
             enter_won: function enter_won() {
+                controller = null;
+
                 view.mc.gotoAndPlay('won');
+                var button = ui.button(view.mc.continueButton, function () {
+                    sm.continue().then(function () {
+                        sm.start();
+                    });
+                    button.remove();
+                });
             },
             enter_playing: function enter_playing() {
                 view.mc.gotoAndPlay('playing');
             },
 
             on_start: function on_start() {
-                view.resetBlocks();
-
                 ++currentLevelIndex;
-                var level = levels[currentLevelIndex];
-                if (!level) {
-                    die("Failed to load level " + currentLevelIndex);
-                }
+                load();
+            },
 
-                var model = PlayfieldModel.fromJSON(level);
-                controller = new PlayfieldController(model, view);
+            on_retry: function on_retry() {
+                load();
             }
         });
 

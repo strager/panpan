@@ -15,6 +15,8 @@ define([ 'model/block' ], function (blockModel) {
             );
         });
 
+        this.view.moveCursorTo(this.model.cursorX, this.model.cursorY);
+
         this.turnsTaken = 0;
     }
 
