@@ -27,6 +27,7 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
 
         var cornerX = this.mc.corner.x;
         var cornerY = this.mc.corner.y;
+        var cornerIndex = this.mc.getChildIndex(this.mc.corner);
 
         this.mcBlocks = new sp.Sprite();
         this.mcBlocks.x = cornerX;
@@ -40,8 +41,8 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         this.mcOverlay.y = cornerY;
         this.mcOverlay.addChild(this.cursor);
 
-        this.mc.addChild(this.mcBlocks);
-        this.mc.addChild(this.mcOverlay);
+        this.mc.addChildAt(this.mcOverlay, cornerIndex);
+        this.mc.addChildAt(this.mcBlocks, cornerIndex);
 
         this.blocks = [ ];
     }
