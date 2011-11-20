@@ -58,6 +58,10 @@ define([ 'model/block' ], function (blockModel) {
         this.blocks[currentIndex] = blockModel.EMPTY;
     };
 
+    PlayfieldModel.prototype.destroyBlock = function destroyBlock(x, y) {
+        this.blocks[this.xyToIndex(x, y)] = blockModel.EMPTY;
+    };
+
     PlayfieldModel.prototype.getFloatingBlockIndices = function getFloatingBlockIndices() {
         // All blocks on a column are floating if a lower row
         // of that column is empty.  Returns a sorted list.
@@ -80,6 +84,61 @@ define([ 'model/block' ], function (blockModel) {
         }
 
         return floatingIndices;
+    };
+
+    PlayfieldModel.prototype.getDestroyedBlockIndices = function getDestroyedBlockIndices() {
+        var destroyed = [ /* falsy values */ ];
+
+        var blocks = this.blocks;
+        var width = this.width;
+        var height = this.height;
+
+        var streakBlock, streakIndices;
+
+        function visit(i) {
+            var block = blocks[i];
+            if (block === streakBlock && block !== blockModel.EMPTY) {
+                streakIndices.push(i);
+
+                if (streakIndices.length === 4) {
+                    streakIndices.forEach(function (index) {
+                        destroyed[index] = true;
+                    });
+                } else if (streakIndices.length > 4) {
+                    destroyed[i] = true;
+                }
+            } else {
+                streakBlock = block;
+                streakIndices = [ i ];
+            }
+        }
+
+        // Horizontal
+        var x, y;
+        for (y = 0; y < height; ++y) {
+            streakBlock = blockModel.EMPTY;
+            streakIndices = [ ];
+            for (x = 0; x < width; ++x) {
+                visit(this.xyToIndex(x, y));
+            }
+        }
+
+        // Vertical
+        for (x = 0; x < width; ++x) {
+            streakBlock = blockModel.EMPTY;
+            streakIndices = [ ];
+            for (y = 0; y < height; ++y) {
+                visit(this.xyToIndex(x, y));
+            }
+        }
+
+        var destroyedIndices = [ ];
+        destroyed.forEach(function (x, i) {
+            if (x) {
+                destroyedIndices.push(i);
+            }
+        });
+        return destroyedIndices;
     };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {

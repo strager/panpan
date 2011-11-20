@@ -25,9 +25,9 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }
         });
 
-        stage.addEventListener(sp.Event.ENTER_FRAME, function () {
-            pfc.fallBlocks();
-        });
+        setInterval(function () {
+            pfc.update();
+        }, 500);
     }
 
     return game;

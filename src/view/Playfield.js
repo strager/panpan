@@ -92,10 +92,6 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         this.position(this.cursor, x, y);
     };
 
-    PlayfieldView.prototype.fallBlock = function fallBlock(x, y) {
-        this.swapBlocks(x, y, x, y - 1);
-    };
-
     PlayfieldView.prototype.swapBlocks = function swapBlocks(x1, y1, x2, y2) {
         var v1 = this.getBlockViewAt(x1, y1);
         var v2 = this.getBlockViewAt(x2, y2);
@@ -115,6 +111,16 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         if (v2) {
             this.setBlockViewAt(x1, y1, v2);
         }
+    };
+
+    PlayfieldView.prototype.fallBlock = function fallBlock(x, y) {
+        this.swapBlocks(x, y, x, y - 1);
+    };
+
+    PlayfieldView.prototype.destroyBlock = function destroyBlock(x, y) {
+        var view = this.getBlockViewAt(x, y);
+        this.mcBlocks.removeChild(view);
+        this.removeBlockViewAt(x, y);
     };
 
     return PlayfieldView;

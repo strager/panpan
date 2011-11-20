@@ -31,6 +31,17 @@ define([ 'model/block' ], function (blockModel) {
         this.view.swapBlocks(x1, y1, x2, y2);
     };
 
+    PlayfieldController.prototype.destroyBlocks = function destroyBlocks() {
+        var destroyedIndices = this.model.getDestroyedBlockIndices();
+        destroyedIndices.forEach(function (index) {
+            var x = this.model.indexToX(index);
+            var y = this.model.indexToY(index);
+
+            this.model.destroyBlock(x, y);
+            this.view.destroyBlock(x, y);
+        }, this);
+    };
+
     PlayfieldController.prototype.fallBlocks = function fallBlocks() {
         var floatingIndices = this.model.getFloatingBlockIndices();
         floatingIndices.forEach(function (index) {
@@ -43,6 +54,11 @@ define([ 'model/block' ], function (blockModel) {
             this.model.fallBlock(x, y);
             this.view.fallBlock(x, y);
         }, this);
+    };
+
+    PlayfieldController.prototype.update = function update() {
+        this.destroyBlocks();
+        this.fallBlocks();
     };
 
     return PlayfieldController;
