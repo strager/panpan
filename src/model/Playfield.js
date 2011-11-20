@@ -12,6 +12,8 @@ define([ 'model/block' ], function (blockModel) {
 
         this.cursorX = 0;
         this.cursorY = 0;
+
+        this.maxTurns = 0;
     }
 
     PlayfieldModel.prototype.indexToXY = function indexToXY(index) {
@@ -144,6 +146,7 @@ define([ 'model/block' ], function (blockModel) {
     PlayfieldModel.fromJSON = function fromJSON(json) {
         var m = new PlayfieldModel(json.width, json.height);
         m.blocks = json.blocks;
+        m.maxTurns = json.maxTurns;
         return m;
     };
 

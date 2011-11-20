@@ -14,6 +14,8 @@ define([ 'model/block' ], function (blockModel) {
                 block
             );
         });
+
+        this.turnsTaken = 0;
     }
 
     PlayfieldController.prototype.moveCursorBy = function moveCursorBy(dx, dy) {
@@ -29,6 +31,8 @@ define([ 'model/block' ], function (blockModel) {
 
         this.model.swapBlocks(x1, y1, x2, y2);
         this.view.swapBlocks(x1, y1, x2, y2);
+
+        ++this.turnsTaken;
     };
 
     PlayfieldController.prototype.destroyBlocks = function destroyBlocks() {
@@ -59,6 +63,56 @@ define([ 'model/block' ], function (blockModel) {
     PlayfieldController.prototype.update = function update() {
         this.destroyBlocks();
         this.fallBlocks();
+    };
+
+    PlayfieldController.prototype.isSettled = function isSettled() {
+        var isBlockFalling = this.model.getFloatingBlockIndices().length;
+        var isBlockDestroying = this.model.getDestroyedBlockIndices().length;
+        return !isBlockFalling && !isBlockDestroying;
+    };
+
+    PlayfieldController.prototype.isWin = function isWin() {
+        if (this.turnsTaken > this.model.maxTurns) {
+            // Probably should never happen
+            return false;
+        }
+
+        var empty = this.model.blocks.every(function (x) {
+            return x === blockModel.EMPTY;
+        })
+
+        if (empty) {
+            return true;
+        } else {
+            if (this.turnsTaken === this.model.maxTurns) {
+                // Some blocks remaining, and we hit the turn
+                // limit
+                return false;
+            } else {
+                // Some blocks remaining, but we haven't hit
+                // the turn limit yet
+                return false;
+            }
+        }
+    };
+
+    PlayfieldController.prototype.isLoss = function isLoss() {
+        if (this.turnsTaken > this.model.maxTurns) {
+            // Probably should never happen
+            return true;
+        }
+
+        if (this.turnsTaken !== this.model.maxTurns) {
+            // We still have some turns left
+            return false;
+        }
+
+        var empty = this.model.blocks.every(function (x) {
+            return x === blockModel.EMPTY;
+        });
+
+        // If there are any blocks left, we lost.
+        return !empty;
     };
 
     return PlayfieldController;

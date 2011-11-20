@@ -40,6 +40,17 @@ function extendDefault(target, defaults, options) {
     return target;
 }
 
+function extend(target /* extensions */) {
+    var i;
+    for (i = 1; i < arguments.length; ++i) {
+        var o = arguments[i];
+        Object.keys(o).forEach(function (key) {
+            target[key] = o[key];
+        });
+    }
+    return target;
+}
+
 (function () {
     var isReady = false;
     var onReady = null;

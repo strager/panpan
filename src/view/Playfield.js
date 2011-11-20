@@ -8,7 +8,7 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
 
         this.blockOptions = extendDefault({ }, {
             themeFile: this.themeFile
-        }, options.blockOptions);
+        }, options && options.blockOptions);
 
         if (this.blockWidth === null || this.blockHeight === null) {
             var PositionsMovieClip = asset.get(this.themeFile + ':BlockPositions');
@@ -27,7 +27,6 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
 
         var cornerX = this.mc.corner.x;
         var cornerY = this.mc.corner.y;
-        this.mc.removeChild(this.mc.corner);
 
         this.mcBlocks = new sp.Sprite();
         this.mcBlocks.x = cornerX;
@@ -121,6 +120,13 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         var view = this.getBlockViewAt(x, y);
         this.mcBlocks.removeChild(view);
         this.removeBlockViewAt(x, y);
+    };
+
+    PlayfieldView.prototype.resetBlocks = function resetBlocks() {
+        this.blocks = [ ];
+        while (this.mcBlocks.children) {
+            this.mcBlocks.removeChildAt(0);
+        }
     };
 
     return PlayfieldView;
