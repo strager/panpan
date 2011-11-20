@@ -21,5 +21,15 @@ define([ 'model/block' ], function (blockModel) {
         this.view.moveCursorTo(this.model.cursorX, this.model.cursorY);
     };
 
+    PlayfieldController.prototype.swapAtCursor = function swapAtCursor() {
+        var x1 = this.model.cursorX;
+        var y1 = this.model.cursorY;
+        var x2 = x1 + 1;
+        var y2 = y1;
+
+        this.model.swapBlocks(x1, y1, x2, y2);
+        this.view.swapBlocks(x1, y1, x2, y2);
+    };
+
     return PlayfieldController;
 });

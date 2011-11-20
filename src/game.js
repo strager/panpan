@@ -9,16 +9,20 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
 
         var pfc = new PlayfieldController(pfm, pfv);
         stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, function (event) {
-            var dx = 0, dy = 0;
-
             switch (event.keyCode) {
-            case sp.Keyboard.LEFT:  dx = -1; break;
-            case sp.Keyboard.RIGHT: dx = +1; break;
-            case sp.Keyboard.UP:    dy = +1; break;
-            case sp.Keyboard.DOWN:  dy = -1; break;
-            }
+            case sp.Keyboard.LEFT:  pfc.moveCursorBy(-1,  0); break;
+            case sp.Keyboard.RIGHT: pfc.moveCursorBy(+1,  0); break;
+            case sp.Keyboard.UP:    pfc.moveCursorBy( 0, +1); break;
+            case sp.Keyboard.DOWN:  pfc.moveCursorBy( 0, -1); break;
 
-            pfc.moveCursorBy(dx, dy);
+            case sp.Keyboard.X:
+                pfc.swapAtCursor();
+                break;
+
+            default:
+                // Unknown key; ignore
+                break;
+            }
         });
     }
 

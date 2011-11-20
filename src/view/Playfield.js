@@ -43,18 +43,74 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
 
         this.mc.addChild(this.mcBlocks);
         this.mc.addChild(this.mcOverlay);
+
+        this.blocks = [ ];
     }
 
     PlayfieldView.prototype.placeBlock = function placeBlock(x, y, block) {
         var view = blockView.fromModel(block, this.blockOptions);
-        view.x = x * this.blockWidth;
-        view.y = -y * this.blockHeight;
+        this.position(view, x, y);
+        this.setBlockViewAt(x, y, view);
         this.mcBlocks.addChild(view);
     };
 
+    PlayfieldView.prototype.getBlockViewAt = function getBlockViewAt(x, y) {
+        if (this.blocks.length <= y)    return null;
+        if (this.blocks[y].length <= x) return null;
+        return this.blocks[y][x];
+    };
+
+    PlayfieldView.prototype.removeBlockViewAt = function removeBlockViewAt(x, y) {
+        if (this.getBlockViewAt(x, y)) {
+            this.blocks[y][x] = null;
+        }
+    };
+
+    PlayfieldView.prototype.setBlockViewAt = function setBlockViewAt(x, y, view) {
+        var grid = this.blocks;
+        while (grid.length <= y) {
+            grid.push([ ]);
+        }
+        var row = grid[y];
+        while (row.length <= x) {
+            row.push(null);
+        }
+
+        if (row[x]) {
+            die("Cannot insert block view; something already exists here");
+        }
+
+        row[x] = view;
+    };
+
+    PlayfieldView.prototype.position = function position(mc, x, y) {
+        mc.x = x * this.blockWidth;
+        mc.y = -y * this.blockHeight;
+    };
+
     PlayfieldView.prototype.moveCursorTo = function moveCursorTo(x, y) {
-        this.cursor.x = x * this.blockWidth;
-        this.cursor.y = -y * this.blockHeight;
+        this.position(this.cursor, x, y);
+    };
+
+    PlayfieldView.prototype.swapBlocks = function swapBlocks(x1, y1, x2, y2) {
+        var v1 = this.getBlockViewAt(x1, y1);
+        var v2 = this.getBlockViewAt(x2, y2);
+
+        if (v1) {
+            this.removeBlockViewAt(x1, y1);
+            this.position(v1, x2, y2);
+        }
+        if (v2) {
+            this.removeBlockViewAt(x2, y2);
+            this.position(v2, x1, y1);
+        }
+
+        if (v1) {
+            this.setBlockViewAt(x2, y2, v1);
+        }
+        if (v2) {
+            this.setBlockViewAt(x1, y1, v2);
+        }
     };
 
     return PlayfieldView;

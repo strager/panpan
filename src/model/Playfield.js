@@ -38,6 +38,15 @@ define([ 'model/block' ], function (block) {
         this.cursorY = Math.min(Math.max(this.cursorY + dy, 0), this.height - 1);
     };
 
+    PlayfieldModel.prototype.swapBlocks = function swapBlocks(x1, y1, x2, y2) {
+        var i1 = this.xyToIndex(x1, y1);
+        var i2 = this.xyToIndex(x2, y2);
+
+        var x = this.blocks[i1];
+        this.blocks[i1] = this.blocks[i2];
+        this.blocks[i2] = x;
+    };
+
     PlayfieldModel.fromJSON = function fromJSON(json) {
         var m = new PlayfieldModel(json.width, json.height);
         m.blocks = json.blocks;
