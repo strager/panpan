@@ -9,7 +9,34 @@ define([ 'model/block' ], function (block) {
             blocks.push(empty);
         }
         this.blocks = blocks;
+
+        this.cursorX = 0;
+        this.cursorY = 0;
     }
+
+    PlayfieldModel.prototype.indexToXY = function indexToXY(index) {
+        return new sp.Point(
+            this.indexToX(index),
+            this.indexToY(index)
+        );
+    };
+
+    PlayfieldModel.prototype.indexToX = function indexToX(index) {
+        return index % this.width;
+    };
+
+    PlayfieldModel.prototype.indexToY = function indexToY(index) {
+        return Math.floor(index / this.width);
+    };
+
+    PlayfieldModel.prototype.xyToIndex = function xyToIndex(x, y) {
+        return x + y * this.width;
+    };
+
+    PlayfieldModel.prototype.moveCursorBy = function moveCursorBy(dx, dy) {
+        this.cursorX += dx;
+        this.cursorY += dy;
+    };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {
         var m = new PlayfieldModel(json.width, json.height);

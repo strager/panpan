@@ -1,12 +1,14 @@
 define([ 'view/block', 'asset' ], function (blockView, asset) {
-    function PlayfieldView(model, options) {
+    function PlayfieldView(options) {
         extendDefault(this, {
             blockWidth: null,
             blockHeight: null,
             themeFile: 'main.swf'
         }, options);
 
-        this.model = model;
+        this.blockOptions = extendDefault({ }, {
+            themeFile: this.themeFile
+        }, options.blockOptions);
 
         if (this.blockWidth === null || this.blockHeight === null) {
             var PositionsMovieClip = asset.get(this.themeFile + ':BlockPositions');
@@ -22,25 +24,31 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
 
         var PlayfieldMovieClip = asset.get(this.themeFile + ':Playfield');
         this.mc = new PlayfieldMovieClip();
-        this.cornerX = this.mc.corner.x;
-        this.cornerY = this.mc.corner.y;
-        this.mc.removeChild(this.mc.corner);
 
-        var blocks = model.blocks.map(function (block, i) {
-            var view = blockView.fromModel(block, options);
-            if (view) {
-                this.position(i, view);
-                this.mc.addChild(view);
-            }
-        }, this);
+        this.mcBlocks = new sp.Sprite();
+        this.mcBlocks.x = this.mc.corner.x;
+        this.mcBlocks.y = this.mc.corner.y;
+
+        // wtb replaceChild
+        var blocksIndex = this.mc.getChildIndex(this.mc.corner);
+        this.mc.removeChild(this.mc.corner);
+        this.mc.addChildAt(this.mcBlocks, blocksIndex);
+
+        var CursorMovieClip = asset.get(this.themeFile + ':Cursor');
+        this.cursor = new CursorMovieClip();
+        this.mc.addChild(this.cursor);
     }
 
-    PlayfieldView.prototype.position = function position(index, mc) {
-        var width = this.model.width;
-        var xb = index % width;
-        var yb = Math.floor(index / width);
-        mc.x = this.cornerX + xb * this.blockWidth;
-        mc.y = this.cornerY - yb * this.blockHeight;
+    PlayfieldView.prototype.placeBlock = function placeBlock(x, y, block) {
+        var view = blockView.fromModel(block, this.blockOptions);
+        view.x = x * this.blockWidth;
+        view.y = -y * this.blockHeight;
+        this.mcBlocks.addChild(view);
+    };
+
+    PlayfieldView.prototype.moveCursorTo = function moveCursorTo(x, y) {
+        this.cursor.x = x * this.blockWidth;
+        this.cursor.y = -y * this.blockHeight;
     };
 
     return PlayfieldView;
