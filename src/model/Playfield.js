@@ -55,7 +55,7 @@ define([ 'model/block' ], function (blockModel) {
         }
 
         this.blocks[fellIndex] = this.blocks[currentIndex];
-        this.blocks.currentIndex = blockModel.EMPTY;
+        this.blocks[currentIndex] = blockModel.EMPTY;
     };
 
     PlayfieldModel.prototype.getFloatingBlockIndices = function getFloatingBlockIndices() {
