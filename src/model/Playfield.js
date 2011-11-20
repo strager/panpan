@@ -1,10 +1,10 @@
-define([ 'model/block' ], function (block) {
+define([ 'model/block' ], function (blockModel) {
     function PlayfieldModel(width, height) {
         this.width = width;
         this.height = height;
 
         var i, blocks = [ ];
-        var empty = block.EMPTY;
+        var empty = blockModel.EMPTY;
         for (i = 0; i < width * height; ++i) {
             blocks.push(empty);
         }
@@ -45,6 +45,41 @@ define([ 'model/block' ], function (block) {
         var x = this.blocks[i1];
         this.blocks[i1] = this.blocks[i2];
         this.blocks[i2] = x;
+    };
+
+    PlayfieldModel.prototype.fallBlock = function fallBlock(x, y) {
+        var currentIndex = this.xyToIndex(x, y);
+        var fellIndex = this.xyToIndex(x, y - 1);
+        if (y === 0 || this.blocks[fellIndex] !== blockModel.EMPTY) {
+            die("Cannot fall block into living block");
+        }
+
+        this.blocks[fellIndex] = this.blocks[currentIndex];
+        this.blocks.currentIndex = blockModel.EMPTY;
+    };
+
+    PlayfieldModel.prototype.getFloatingBlockIndices = function getFloatingBlockIndices() {
+        // All blocks on a column are floating if a lower row
+        // of that column is empty.  Returns a sorted list.
+        var floatingIndices = [ ];
+        var holyColumns = [ /* falsy values */ ];
+
+        var blocks = this.blocks;
+
+        var i = 0;
+        while (i < blocks.length) {
+            var x;
+            for (x = 0; x < this.width; ++x) {
+                if (blocks[i] === blockModel.EMPTY) {
+                    holyColumns[x] = true;
+                } else if (holyColumns[x]) {
+                    floatingIndices.push(i);
+                }
+                ++i;
+            }
+        }
+
+        return floatingIndices;
     };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {

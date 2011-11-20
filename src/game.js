@@ -24,6 +24,10 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                 break;
             }
         });
+
+        stage.addEventListener(sp.Event.ENTER_FRAME, function () {
+            pfc.fallBlocks();
+        });
     }
 
     return game;

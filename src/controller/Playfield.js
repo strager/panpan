@@ -31,5 +31,19 @@ define([ 'model/block' ], function (blockModel) {
         this.view.swapBlocks(x1, y1, x2, y2);
     };
 
+    PlayfieldController.prototype.fallBlocks = function fallBlocks() {
+        var floatingIndices = this.model.getFloatingBlockIndices();
+        floatingIndices.forEach(function (index) {
+            // Because the indices are sorted, we're falling
+            // from the bottom row.  We're safe from state
+            // conflicts.
+            var x = this.model.indexToX(index);
+            var y = this.model.indexToY(index);
+
+            this.model.fallBlock(x, y);
+            this.view.fallBlock(x, y);
+        }, this);
+    };
+
     return PlayfieldController;
 });
