@@ -74,11 +74,6 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldController.prototype.isWin = function isWin() {
-        if (this.turnsTaken > this.model.maxTurns) {
-            // Probably should never happen
-            return false;
-        }
-
         var empty = this.model.blocks.every(function (x) {
             return x === blockModel.EMPTY;
         })
@@ -99,13 +94,7 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldController.prototype.isLoss = function isLoss() {
-        if (this.turnsTaken > this.model.maxTurns) {
-            // Probably should never happen
-            return true;
-        }
-
-        if (this.turnsTaken !== this.model.maxTurns) {
-            // We still have some turns left
+        if (this.canMakeMove()) {
             return false;
         }
 
@@ -115,6 +104,10 @@ define([ 'model/block' ], function (blockModel) {
 
         // If there are any blocks left, we lost.
         return !empty;
+    };
+
+    PlayfieldController.prototype.canMakeMove = function canMakeMove() {
+        return this.model.maxTurns === 0 || this.turnsTaken < this.model.maxTurns;
     };
 
     return PlayfieldController;

@@ -28,7 +28,9 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             case sp.Keyboard.DOWN:  c.moveCursorBy( 0, -1); break;
 
             case sp.Keyboard.X:
-                c.swapAtCursor();
+                if (c.canMakeMove()) {
+                    c.swapAtCursor();
+                }
                 break;
 
             default:
