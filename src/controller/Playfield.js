@@ -76,7 +76,7 @@ define([ 'model/block' ], function (blockModel) {
     PlayfieldController.prototype.isWin = function isWin() {
         var empty = this.model.blocks.every(function (x) {
             return x === blockModel.EMPTY;
-        })
+        });
 
         if (empty) {
             return true;
