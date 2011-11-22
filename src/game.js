@@ -39,12 +39,17 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }
         });
 
+        var lastTime = null;
         setInterval(function () {
             if (!controller) {
                 return;
             }
 
-            controller.update();
+            var now = Date.now();
+            if (lastTime !== null) {
+                controller.update(now - lastTime);
+            }
+            lastTime = now;
 
             if (controller.isSettled()) {
                 if (controller.isWin()) {
@@ -53,7 +58,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                     sm.fail();
                 }
             }
-        }, 500);
+        }, 20);
 
         function load() {
             view.resetBlocks();

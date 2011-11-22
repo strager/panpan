@@ -117,7 +117,12 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         this.swapBlocks(x, y, x, y - 1);
     };
 
-    PlayfieldView.prototype.destroyBlock = function destroyBlock(x, y) {
+    PlayfieldView.prototype.startDestroyBlock = function startDestroyBlock(x, y) {
+        var view = this.getBlockViewAt(x, y);
+        view.alpha = 0.5;
+    };
+
+    PlayfieldView.prototype.endDestroyBlock = function endDestroyBlock(x, y) {
         var view = this.getBlockViewAt(x, y);
         this.mcBlocks.removeChild(view);
         this.removeBlockViewAt(x, y);

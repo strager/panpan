@@ -1,14 +1,32 @@
 define([ 'model/block' ], function (blockModel) {
+    // blocks is an array representing the grid of blocks.  The
+    // array is 1-D, left to right, bottom up.
+    //
+    // blockTimers corresponds to blocks.  Each element
+    // contains the number of milliseconds left until the block
+    // should be checking for falling.
+    //
+    // After a swap, the block timers for each swapped block
+    // are set to the swap time.  After a fall, it's set to
+    // the fall time.  (Empty blocks don't have timers.)
+    //
+    // After a destruction is triggered, the block timer values
+    // are *negative*, corresponding to the length of the
+    // destruction.
     function PlayfieldModel(width, height) {
         this.width = width;
         this.height = height;
 
-        var i, blocks = [ ];
+        var blocks = [ ];
+        var blockTimers = [ ];
         var empty = blockModel.EMPTY;
+        var i;
         for (i = 0; i < width * height; ++i) {
             blocks.push(empty);
+            blockTimers.push(0);
         }
         this.blocks = blocks;
+        this.blockTimers = blockTimers;
 
         this.cursorX = 0;
         this.cursorY = 0;
@@ -47,17 +65,23 @@ define([ 'model/block' ], function (blockModel) {
         var x = this.blocks[i1];
         this.blocks[i1] = this.blocks[i2];
         this.blocks[i2] = x;
+
+        x = this.blockTimers[i1];
+        this.blockTimers[i1] = this.blockTimers[i2];
+        this.blockTimers[i2] = x;
     };
 
-    PlayfieldModel.prototype.fallBlock = function fallBlock(x, y) {
-        var currentIndex = this.xyToIndex(x, y);
-        var fellIndex = this.xyToIndex(x, y - 1);
-        if (y === 0 || this.blocks[fellIndex] !== blockModel.EMPTY) {
+    PlayfieldModel.prototype.fallBlock = function fallBlock(index) {
+        var fellIndex = index - this.width;
+        if (fellIndex < 0) {
+            die("Cannot fall block off the edge");
+        }
+        if (this.blocks[fellIndex] !== blockModel.EMPTY) {
             die("Cannot fall block into living block");
         }
 
-        this.blocks[fellIndex] = this.blocks[currentIndex];
-        this.blocks[currentIndex] = blockModel.EMPTY;
+        this.blocks[fellIndex] = this.blocks[index];
+        this.blocks[index] = blockModel.EMPTY;
     };
 
     PlayfieldModel.prototype.destroyBlock = function destroyBlock(x, y) {
@@ -92,6 +116,7 @@ define([ 'model/block' ], function (blockModel) {
         var destroyed = [ /* falsy values */ ];
 
         var blocks = this.blocks;
+        var blockTimers = this.blockTimers;
         var width = this.width;
         var height = this.height;
 
@@ -99,7 +124,7 @@ define([ 'model/block' ], function (blockModel) {
 
         function visit(i) {
             var block = blocks[i];
-            if (block === streakBlock && block !== blockModel.EMPTY) {
+            if (block === streakBlock && block !== blockModel.EMPTY && blockTimers[i] === 0) {
                 streakIndices.push(i);
 
                 if (streakIndices.length === 4) {
@@ -141,6 +166,36 @@ define([ 'model/block' ], function (blockModel) {
             }
         });
         return destroyedIndices;
+    };
+
+    PlayfieldModel.prototype.shouldBlockFall = function shouldBlockFall(index) {
+        if (this.blocks[index] === blockModel.EMPTY) {
+            // No block here
+            return false;
+        }
+
+        var fellIndex = index - this.width;
+        if (fellIndex < 0) {
+            // Off edge of screen
+            return false;
+        }
+        if (this.blocks[fellIndex] !== blockModel.EMPTY) {
+            // Block is underneath us
+            return false;
+        }
+        if (this.blockTimers[fellIndex] !== 0) {
+            // Something crazy happening below
+            return false;
+        }
+
+        // We're clear for take-off
+        return true;
+    };
+
+    PlayfieldModel.prototype.isSettled = function isSettled() {
+        return this.blockTimers.every(function (t) {
+            return t === 0;
+        });
     };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {
