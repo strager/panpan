@@ -18,6 +18,8 @@ define([ 'model/block' ], function (blockModel) {
         this.view.moveCursorTo(this.model.cursorX, this.model.cursorY);
 
         this.turnsTaken = 0;
+        this.view.setTurnCount(this.turnsTaken);
+        this.view.setMaxTurnCount(this.model.maxTurns);
     }
 
     PlayfieldController.prototype.moveCursorBy = function moveCursorBy(dx, dy) {
@@ -49,6 +51,7 @@ define([ 'model/block' ], function (blockModel) {
         this.view.swapBlocks(x1, y1, x2, y2);
 
         ++this.turnsTaken;
+        this.view.setTurnCount(this.turnsTaken);
     };
 
     PlayfieldController.prototype.update = function update(dt) {

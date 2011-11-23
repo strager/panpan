@@ -45,6 +45,10 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         this.mc.addChildAt(this.mcBlocks, cornerIndex);
 
         this.blocks = [ ];
+
+        this.turnCount = 0;
+        this.maxTurnCount = 0;
+        this.updateTurnCount();
     }
 
     PlayfieldView.prototype.placeBlock = function placeBlock(x, y, block) {
@@ -133,6 +137,20 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         while (this.mcBlocks.children) {
             this.mcBlocks.removeChildAt(0);
         }
+    };
+
+    PlayfieldView.prototype.setMaxTurnCount = function setMaxTurnCount(maxTurnCount) {
+        this.maxTurnCount = maxTurnCount;
+        this.updateTurnCount();
+    };
+
+    PlayfieldView.prototype.setTurnCount = function setTurnCount(turnCount) {
+        this.turnCount = turnCount;
+        this.updateTurnCount();
+    };
+
+    PlayfieldView.prototype.updateTurnCount = function updateTurnCount() {
+        this.mc.turnCount.text = this.turnCount + '/' + this.maxTurnCount;
     };
 
     return PlayfieldView;
