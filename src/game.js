@@ -1,4 +1,4 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'ui' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, ui) {
+define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q) {
     var GameStateMachine = stateMachine([
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
@@ -53,9 +53,9 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
 
             if (controller.isSettled()) {
                 if (controller.isWin()) {
-                    sm.win();
+                    Q.fail(sm.win(), die);
                 } else if (controller.isLoss()) {
-                    sm.fail();
+                    Q.fail(sm.fail(), die);
                 }
             }
         }, 20);
@@ -75,25 +75,28 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             enter_failed: function enter_failed() {
                 controller = null;
 
-                view.mc.gotoAndPlay('failed');
-                var button = ui.button(view.mc.retryButton, function () {
-                    sm.retry();
-                    button.remove();
+                var popup = new PopupView('failed', {
+                    on_retry: function on_continue() {
+                        Q.fail(sm.retry(), die);
+                    }
                 });
+                stage.addChild(popup.mc);
             },
             enter_won: function enter_won() {
                 controller = null;
 
-                view.mc.gotoAndPlay('won');
-                var button = ui.button(view.mc.continueButton, function () {
-                    sm.continue().then(function () {
-                        sm.start();
-                    });
-                    button.remove();
+                var popup = new PopupView('won', {
+                    on_continue: function on_continue() {
+                        Q.when(
+                            sm.continue(),
+                            sm.start.bind(sm),
+                            die
+                        );
+                    }
                 });
+                stage.addChild(popup.mc);
             },
             enter_playing: function enter_playing() {
-                view.mc.gotoAndPlay('playing');
             },
 
             on_start: function on_start() {
@@ -106,7 +109,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }
         });
 
-        sm.start();
+        Q.fail(sm.start(), die);
     }
 
     return game;
