@@ -34,6 +34,11 @@ define([ 'model/block' ], function (blockModel) {
         var index1 = this.model.xyToIndex(x1, y1);
         var index2 = this.model.xyToIndex(x2, y2);
 
+        if (this.model.blocks[index1] === blockModel.EMPTY && this.model.blocks[index2] === blockModel.EMPTY) {
+            // Don't do anything when swapping empty blocks
+            return;
+        }
+
         if (this.model.blockTimers[index1] === 0) {
             this.model.blockTimers[index1] = 200;
         }
