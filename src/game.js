@@ -15,53 +15,6 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         var view = new PlayfieldView();
         screen.setPlayfield(view);
 
-        var controller;
-        stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, function (event) {
-            if (!controller) {
-                return;
-            }
-
-            var c = controller;
-
-            switch (event.keyCode) {
-            case sp.Keyboard.LEFT:  c.moveCursorBy(-1,  0); break;
-            case sp.Keyboard.RIGHT: c.moveCursorBy(+1,  0); break;
-            case sp.Keyboard.UP:    c.moveCursorBy( 0, +1); break;
-            case sp.Keyboard.DOWN:  c.moveCursorBy( 0, -1); break;
-
-            case sp.Keyboard.X:
-                if (c.canMakeMove()) {
-                    c.swapAtCursor();
-                }
-                break;
-
-            default:
-                // Unknown key; ignore
-                break;
-            }
-        });
-
-        var lastTime = null;
-        setInterval(function () {
-            if (!controller) {
-                return;
-            }
-
-            var now = Date.now();
-            if (lastTime !== null) {
-                controller.update(now - lastTime);
-            }
-            lastTime = now;
-
-            if (controller.isSettled()) {
-                if (controller.isWin()) {
-                    Q.fail(sm.win(), die);
-                } else if (controller.isLoss()) {
-                    Q.fail(sm.fail(), die);
-                }
-            }
-        }, 20);
-
         function load() {
             view.resetBlocks();
             var level = levels[currentLevelIndex];
@@ -70,42 +23,90 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }
 
             var model = PlayfieldModel.fromJSON(level);
-            controller = new PlayfieldController(model, view);
+            var c = new PlayfieldController(model, view);
+
+            screen.addKeyHandler(sp.Keyboard.LEFT,  c.moveCursorBy.bind(c, -1,  0), 'down');
+            screen.addKeyHandler(sp.Keyboard.RIGHT, c.moveCursorBy.bind(c, +1,  0), 'down');
+            screen.addKeyHandler(sp.Keyboard.UP,    c.moveCursorBy.bind(c,  0, +1), 'down');
+            screen.addKeyHandler(sp.Keyboard.DOWN,  c.moveCursorBy.bind(c,  0, -1), 'down');
+
+            screen.addKeyHandler([ sp.Keyboard.X, sp.Keyboard.SPACE ], function () {
+                if (c.canMakeMove()) {
+                    c.swapAtCursor();
+                }
+            }, 'down');
+
+            var lastTime = null;
+            var gameLoop = setInterval(function () {
+                var now = Date.now();
+                if (lastTime !== null) {
+                    c.update(now - lastTime);
+                }
+                lastTime = now;
+
+                if (c.isSettled()) {
+                    if (c.isWin()) {
+                        clearInterval(gameLoop);
+                        Q.fail(sm.win(), die);
+                    } else if (c.isLoss()) {
+                        clearInterval(gameLoop);
+                        Q.fail(sm.fail(), die);
+                    }
+                }
+            }, 20);
+        }
+
+        var keyHandlers = [ ];
+        function clearKeyHandlers() {
+            keyHandlers.forEach(function (keyHandler) {
+                keyHandler.remove();
+            });
+            keyHandlers.length = 0;
         }
 
         var sm = new GameStateMachine('none', {
             enter_failed: function enter_failed() {
-                controller = null;
+                clearKeyHandlers();
+
+                function on_retry() {
+                    Q.fail(sm.retry(), die);
+                }
 
                 screen.setPopup(new PopupView('failed', {
-                    on_retry: function on_continue() {
-                        Q.fail(sm.retry(), die);
-                    }
+                    on_retry: on_retry
                 }));
             },
             enter_won: function enter_won() {
-                controller = null;
+                clearKeyHandlers();
+
+                function on_continue() {
+                    Q.when(
+                        sm.continue(),
+                        sm.start.bind(sm),
+                        die
+                    );
+                }
 
                 screen.setPopup(new PopupView('won', {
-                    on_continue: function on_continue() {
-                        Q.when(
-                            sm.continue(),
-                            sm.start.bind(sm),
-                            die
-                        );
-                    }
+                    on_continue: on_continue
                 }));
             },
             enter_playing: function enter_playing() {
+                clearKeyHandlers();
+
                 screen.clearPopup();
             },
 
             on_start: function on_start() {
+                clearKeyHandlers();
+
                 ++currentLevelIndex;
                 load();
             },
 
             on_retry: function on_retry() {
+                clearKeyHandlers();
+
                 load();
             }
         });

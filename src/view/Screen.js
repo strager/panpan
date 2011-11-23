@@ -38,5 +38,67 @@ define([ ], function () {
         }
     };
 
+    Screen.prototype.addKeyHandler = function addKeyHandler(keys, callback, type, once) {
+        if (!Array.isArray(keys)) {
+            keys = [ keys ];
+        }
+        type = type || 'downup';
+        once = !!once;
+
+        var didDown = false;
+
+        var stage = this.mc.stage;
+
+        function down(event) {
+            if (keys.indexOf(event.keyCode) < 0) {
+                return;
+            }
+
+            didDown = true;
+            if (type === 'down') {
+                if (once) {
+                    remove();
+                }
+
+                callback(event.keyCode);
+            }
+        }
+
+        function up(event) {
+            if (keys.indexOf(event.keyCode) < 0) {
+                return;
+            }
+
+            if (type === 'up' || (type === 'downup' && didDown)) {
+                if (once) {
+                    remove();
+                }
+
+                callback(event.keyCode);
+            }
+            didDown = false;
+        }
+
+        function removeEventListeners() {
+            stage.removeEventListener(sp.KeyboardEvent.KEY_DOWN, down);
+            stage.removeEventListener(sp.KeyboardEvent.KEY_UP, up);
+        }
+
+        function remove() {
+            removeEventListeners();
+        }
+
+        if (type === 'down' || type === 'downup') {
+            stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, down);
+        }
+        if (type === 'up' || type === 'downup') {
+            stage.addEventListener(sp.KeyboardEvent.KEY_UP, up);
+        }
+
+        return {
+            remove: remove
+        };
+    };
+
     return Screen;
 });
