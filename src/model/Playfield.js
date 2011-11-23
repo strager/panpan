@@ -32,6 +32,7 @@ define([ 'model/block' ], function (blockModel) {
         this.cursorY = 0;
 
         this.maxTurns = 0;
+        this.minStreakSize = 3;
     }
 
     PlayfieldModel.prototype.indexToXY = function indexToXY(index) {
@@ -119,6 +120,7 @@ define([ 'model/block' ], function (blockModel) {
         var blockTimers = this.blockTimers;
         var width = this.width;
         var height = this.height;
+        var minStreakSize = this.minStreakSize;
 
         var streakBlock, streakIndices;
 
@@ -127,11 +129,11 @@ define([ 'model/block' ], function (blockModel) {
             if (block === streakBlock && block !== blockModel.EMPTY && blockTimers[i] === 0) {
                 streakIndices.push(i);
 
-                if (streakIndices.length === 4) {
+                if (streakIndices.length === minStreakSize) {
                     streakIndices.forEach(function (index) {
                         destroyed[index] = true;
                     });
-                } else if (streakIndices.length > 4) {
+                } else if (streakIndices.length > minStreakSize) {
                     destroyed[i] = true;
                 }
             } else {
@@ -201,7 +203,8 @@ define([ 'model/block' ], function (blockModel) {
     PlayfieldModel.fromJSON = function fromJSON(json) {
         var m = new PlayfieldModel(json.width, json.height);
         m.blocks = json.blocks.slice();
-        m.maxTurns = json.maxTurns;
+        m.maxTurns = json.maxTurns || m.maxTurns;
+        m.minStreakSize = json.minStreakSize || m.minStreakSize;
         return m;
     };
 
