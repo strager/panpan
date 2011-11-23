@@ -58,6 +58,12 @@ function extend(target /* extensions */) {
     var onReady = null;
 
     window.main = function main() {
+        // HACK to focus Flash
+        var frash = document.querySelector('object');
+        if (frash) {
+            frash.focus();
+        }
+
         isReady = true;
         if (onReady) {
             onReady(sp.stage);
