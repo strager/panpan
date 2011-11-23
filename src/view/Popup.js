@@ -1,7 +1,8 @@
 define([ 'asset', 'ui' ], function (asset, ui) {
     var classNames = {
         'failed': 'PopupFailed',
-        'won': 'PopupWon'
+        'won': 'PopupWon',
+        'end': 'PopupEnd'
     };
 
     function PopupView(name, options) {

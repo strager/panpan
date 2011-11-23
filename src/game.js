@@ -84,19 +84,23 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             enter_won: function enter_won() {
                 clearKeyHandlers();
 
-                function on_continue() {
-                    Q.when(
-                        sm.continue(),
-                        sm.start.bind(sm),
-                        die
-                    );
+                if (currentLevelIndex + 1 >= levels.length) {
+                    screen.setPopup(new PopupView('end', { }));
+                } else {
+                    function on_continue() {
+                        Q.when(
+                            sm.continue(),
+                            sm.start.bind(sm),
+                            die
+                        );
+                    }
+
+                    keyHandlers.push(screen.addKeyHandler(NEXT_KEYS, on_continue, 'down'));
+
+                    screen.setPopup(new PopupView('won', {
+                        on_continue: on_continue
+                    }));
                 }
-
-                keyHandlers.push(screen.addKeyHandler(NEXT_KEYS, on_continue, 'down'));
-
-                screen.setPopup(new PopupView('won', {
-                    on_continue: on_continue
-                }));
             },
             enter_playing: function enter_playing() {
                 screen.clearPopup();
