@@ -1,4 +1,4 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q) {
+define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView) {
     var GameStateMachine = stateMachine([
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
@@ -8,10 +8,12 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
     ]);
 
     function game(stage) {
+        var screen = new ScreenView(stage);
+
         var currentLevelIndex = -1;
 
         var view = new PlayfieldView();
-        stage.addChild(view.mc);
+        screen.setPlayfield(view);
 
         var controller;
         stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, function (event) {
@@ -75,17 +77,16 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             enter_failed: function enter_failed() {
                 controller = null;
 
-                var popup = new PopupView('failed', {
+                screen.setPopup(new PopupView('failed', {
                     on_retry: function on_continue() {
                         Q.fail(sm.retry(), die);
                     }
-                });
-                stage.addChild(popup.mc);
+                }));
             },
             enter_won: function enter_won() {
                 controller = null;
 
-                var popup = new PopupView('won', {
+                screen.setPopup(new PopupView('won', {
                     on_continue: function on_continue() {
                         Q.when(
                             sm.continue(),
@@ -93,10 +94,10 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                             die
                         );
                     }
-                });
-                stage.addChild(popup.mc);
+                }));
             },
             enter_playing: function enter_playing() {
+                screen.clearPopup();
             },
 
             on_start: function on_start() {
