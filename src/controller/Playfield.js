@@ -38,7 +38,11 @@ define([ 'model/block' ], function (blockModel) {
         var index2 = this.model.xyToIndex(x2, y);
 
         if (this.model.blocks[index1] === blockModel.EMPTY && this.model.blocks[index2] === blockModel.EMPTY) {
-            // Don't do anything when swapping empty blocks
+            // Don't do anything when swapping two empty blocks
+            return;
+        }
+
+        if (!this.model.canSwapBlock(index1) || !this.model.canSwapBlock(index2)) {
             return;
         }
 

@@ -200,6 +200,10 @@ define([ 'model/block' ], function (blockModel) {
         });
     };
 
+    PlayfieldModel.prototype.canSwapBlock = function canSwapBlock(index) {
+        return this.blockTimers[index] >= 0;
+    };
+
     PlayfieldModel.fromJSON = function fromJSON(json) {
         var m = new PlayfieldModel(json.width, json.height);
         m.blocks = json.blocks.slice();
