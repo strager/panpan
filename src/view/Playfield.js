@@ -212,9 +212,14 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
         this.swapBlocks(x, y, x, y - 1);
     };
 
+    PlayfieldView.prototype.haltBlock = function haltBlock(x, y) {
+        var view = this.getBlockViewAt(x, y);
+        view.gotoAndPlay('halt');
+    };
+
     PlayfieldView.prototype.startDestroyBlock = function startDestroyBlock(x, y) {
         var view = this.getBlockViewAt(x, y);
-        view.alpha = 0.5;
+        view.gotoAndPlay('destroy');
     };
 
     PlayfieldView.prototype.endDestroyBlock = function endDestroyBlock(x, y) {

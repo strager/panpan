@@ -15,6 +15,10 @@ define([ 'model/block' ], function (blockModel) {
             );
         });
 
+        this.blockHaltTimers = model.blocks.map(function () {
+            return 0;
+        });
+
         this.view.moveCursorTo(this.model.cursorX, this.model.cursorY);
 
         this.turnsTaken = 0;
@@ -65,11 +69,17 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldController.prototype.update = function update(dt) {
-        var blocks = this.model.blocks;
-        var blockTimers = this.model.blockTimers;
         this.model.blocks.forEach(function (block, index) {
             var x = this.model.indexToX(index);
             var y = this.model.indexToY(index);
+
+            // Check for halting blocks
+            var haltT = this.blockHaltTimers[index];
+            var newHaltT = Math.max(0, haltT - dt);
+            if (newHaltT === 0 && haltT !== 0) {
+                this.view.startDestroyBlock(x, y);
+            }
+            this.blockHaltTimers[index] = newHaltT;
 
             // Check destroying blocks
             var destroyT = this.model.blockDestroyTimers[index];
@@ -104,8 +114,9 @@ define([ 'model/block' ], function (blockModel) {
         destroyedIndices.forEach(function (index) {
             var x = this.model.indexToX(index);
             var y = this.model.indexToY(index);
-            this.view.startDestroyBlock(x, y);
-            this.model.blockDestroyTimers[index] = 500;
+            this.view.haltBlock(x, y);
+            this.model.blockDestroyTimers[index] = 1000;
+            this.blockHaltTimers[index] = 500;
         }, this);
     };
 
