@@ -22,7 +22,7 @@ define([ ], function () {
         subscribers.push(callback.bind(context));
 
         return {
-            unsubscribe: function unsubscribe() {
+            remove: function remove() {
                 delete subscribers[index];
             }
         };

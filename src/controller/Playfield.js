@@ -27,14 +27,12 @@ define([ 'model/block' ], function (blockModel) {
         this.view.moveCursorTo(this.model.cursorX, this.model.cursorY);
     };
 
-    PlayfieldController.prototype.swapAtCursor = function swapAtCursor() {
-        var x1 = this.model.cursorX;
-        var y1 = this.model.cursorY;
-        var x2 = x1 + 1;
-        var y2 = y1;
+    // Make the swaps so block at (x1,y) ends up at (x2,y)
+    PlayfieldController.prototype.swapBlock = function swapBlock(x1, y, x2) {
+        // FIXME FIXME This doesn't handle "jumps", e.g. (0,0) => (2,0)
 
-        var index1 = this.model.xyToIndex(x1, y1);
-        var index2 = this.model.xyToIndex(x2, y2);
+        var index1 = this.model.xyToIndex(x1, y);
+        var index2 = this.model.xyToIndex(x2, y);
 
         if (this.model.blocks[index1] === blockModel.EMPTY && this.model.blocks[index2] === blockModel.EMPTY) {
             // Don't do anything when swapping empty blocks
@@ -47,11 +45,19 @@ define([ 'model/block' ], function (blockModel) {
         if (this.model.blockTimers[index2] === 0) {
             this.model.blockTimers[index2] = 200;
         }
-        this.model.swapBlocks(x1, y1, x2, y2);
-        this.view.swapBlocks(x1, y1, x2, y2);
+        this.model.swapBlocks(x1, y, x2, y);
+        this.view.swapBlocks(x1, y, x2, y);
 
         ++this.turnsTaken;
         this.view.setTurnCount(this.turnsTaken);
+    };
+
+    PlayfieldController.prototype.swapAtCursor = function swapAtCursor() {
+        this.swapBlock(
+            this.model.cursorX,
+            this.model.cursorY,
+            this.model.cursorX + 1
+        );
     };
 
     PlayfieldController.prototype.update = function update(dt) {

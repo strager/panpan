@@ -18,10 +18,6 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         var view = new PlayfieldView();
         screen.setPlayfield(view);
 
-        view.events.blockHoldMove.subscribe(function (x, y, oldX, oldY) {
-            console.log(oldX, oldY, '=>', x, y);
-        });
-
         function load() {
             view.resetBlocks();
             var level = levels[currentLevelIndex];
@@ -32,16 +28,24 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             var model = PlayfieldModel.fromJSON(level);
             var c = new PlayfieldController(model, view);
 
-            keyHandlers.push(screen.addKeyHandler(sp.Keyboard.LEFT,  c.moveCursorBy.bind(c, -1,  0), 'down'));
-            keyHandlers.push(screen.addKeyHandler(sp.Keyboard.RIGHT, c.moveCursorBy.bind(c, +1,  0), 'down'));
-            keyHandlers.push(screen.addKeyHandler(sp.Keyboard.UP,    c.moveCursorBy.bind(c,  0, +1), 'down'));
-            keyHandlers.push(screen.addKeyHandler(sp.Keyboard.DOWN,  c.moveCursorBy.bind(c,  0, -1), 'down'));
+            handlers.push(screen.addKeyHandler(sp.Keyboard.LEFT,  c.moveCursorBy.bind(c, -1,  0), 'down'));
+            handlers.push(screen.addKeyHandler(sp.Keyboard.RIGHT, c.moveCursorBy.bind(c, +1,  0), 'down'));
+            handlers.push(screen.addKeyHandler(sp.Keyboard.UP,    c.moveCursorBy.bind(c,  0, +1), 'down'));
+            handlers.push(screen.addKeyHandler(sp.Keyboard.DOWN,  c.moveCursorBy.bind(c,  0, -1), 'down'));
 
-            keyHandlers.push(screen.addKeyHandler(SWAP_KEYS, function () {
+            handlers.push(screen.addKeyHandler(SWAP_KEYS, function () {
                 if (c.canMakeMove()) {
                     c.swapAtCursor();
                 }
             }, 'down'));
+
+            handlers.push(view.events.blockHoldMove.subscribe(function (x, y, oldX, oldY) {
+                if (y !== oldY) {
+                    die("Shouldn't get a block hold move with different Y values");
+                }
+
+                c.swapBlock(x, y, oldX);
+            }));
 
             var lastTime = null;
             var gameLoop = setInterval(function () {
@@ -63,12 +67,12 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }, 20);
         }
 
-        var keyHandlers = [ ];
+        var handlers = [ ];
         function clearKeyHandlers() {
-            keyHandlers.forEach(function (keyHandler) {
+            handlers.forEach(function (keyHandler) {
                 keyHandler.remove();
             });
-            keyHandlers.length = 0;
+            handlers.length = 0;
         }
 
         var sm = new GameStateMachine('none', {
@@ -79,7 +83,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                     Q.fail(sm.retry(), die);
                 }
 
-                keyHandlers.push(screen.addKeyHandler(NEXT_KEYS, on_retry, 'down'));
+                handlers.push(screen.addKeyHandler(NEXT_KEYS, on_retry, 'down'));
 
                 screen.setPopup(new PopupView('failed', {
                     on_retry: on_retry
@@ -99,7 +103,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                         );
                     }
 
-                    keyHandlers.push(screen.addKeyHandler(NEXT_KEYS, on_continue, 'down'));
+                    handlers.push(screen.addKeyHandler(NEXT_KEYS, on_continue, 'down'));
 
                     screen.setPopup(new PopupView('won', {
                         on_continue: on_continue
