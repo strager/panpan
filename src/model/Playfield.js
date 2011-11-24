@@ -2,31 +2,34 @@ define([ 'model/block' ], function (blockModel) {
     // blocks is an array representing the grid of blocks.  The
     // array is 1-D, left to right, bottom up.
     //
-    // blockTimers corresponds to blocks.  Each element
-    // contains the number of milliseconds left until the block
-    // should be checking for falling.
+    // The block___Timers arrays corresponds to blocks, just
+    // like the blocks array.  Each element contains the number
+    // of milliseconds left until the block should be checking
+    // for a special condition:
     //
-    // After a swap, the block timers for each swapped block
-    // are set to the swap time.  After a fall, it's set to
-    // the fall time.  (Empty blocks don't have timers.)
+    // blockFallTimers: check for falling; piece remains
+    //   floating while the time is non-zero.  Set when a piece
+    //   is swapped or fallen.
     //
-    // After a destruction is triggered, the block timer values
-    // are *negative*, corresponding to the length of the
-    // destruction.
+    // blockDestroyTimers: check for destruction; piece remains
+    //   present while the time is non-zero.  (When the time
+    //   reaches zero, the piece is destroyed; the piece is not
+    //   destroyed if the time remains zero.)  Set when a piece
+    //   begins destruction.
     function PlayfieldModel(width, height) {
         this.width = width;
         this.height = height;
 
-        var blocks = [ ];
-        var blockTimers = [ ];
-        var empty = blockModel.EMPTY;
+        this.blocks = [ ];
+        this.blockFallTimers = [ ];
+        this.blockDestroyTimers = [ ];
+
         var i;
         for (i = 0; i < width * height; ++i) {
-            blocks.push(empty);
-            blockTimers.push(0);
+            this.blocks.push(blockModel.EMPTY);
+            this.blockFallTimers.push(0);
+            this.blockDestroyTimers.push(0);
         }
-        this.blocks = blocks;
-        this.blockTimers = blockTimers;
 
         this.cursorX = 0;
         this.cursorY = 0;
@@ -59,17 +62,19 @@ define([ 'model/block' ], function (blockModel) {
         this.cursorY = Math.min(Math.max(this.cursorY + dy, 0), this.height - 1);
     };
 
+    function swap(array, i1, i2) {
+        var x = array[i1];
+        array[i1] = array[i2];
+        array[i2] = x;
+    }
+
     PlayfieldModel.prototype.swapBlocks = function swapBlocks(x1, y1, x2, y2) {
         var i1 = this.xyToIndex(x1, y1);
         var i2 = this.xyToIndex(x2, y2);
 
-        var x = this.blocks[i1];
-        this.blocks[i1] = this.blocks[i2];
-        this.blocks[i2] = x;
-
-        x = this.blockTimers[i1];
-        this.blockTimers[i1] = this.blockTimers[i2];
-        this.blockTimers[i2] = x;
+        swap(this.blocks, i1, i2);
+        swap(this.blockFallTimers, i1, i2);
+        swap(this.blockDestroyTimers, i1, i2);
     };
 
     PlayfieldModel.prototype.fallBlock = function fallBlock(index) {
@@ -114,19 +119,27 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldModel.prototype.getDestroyedBlockIndices = function getDestroyedBlockIndices() {
+        // TODO Clean up
+
         var destroyed = [ /* falsy values */ ];
 
         var blocks = this.blocks;
-        var blockTimers = this.blockTimers;
+        var blockFallTimers = this.blockFallTimers;
+        var blockDestroyTimers = this.blockDestroyTimers;
         var width = this.width;
         var height = this.height;
         var minStreakSize = this.minStreakSize;
 
         var streakBlock, streakIndices;
 
+        var self = this;
         function visit(i) {
             var block = blocks[i];
-            if (block === streakBlock && block !== blockModel.EMPTY && blockTimers[i] === 0) {
+            var canDestroy =
+                block !== blockModel.EMPTY &&
+                self.isBlockSettled(i);
+
+            if (block === streakBlock && canDestroy) {
                 streakIndices.push(i);
 
                 if (streakIndices.length === minStreakSize) {
@@ -185,7 +198,7 @@ define([ 'model/block' ], function (blockModel) {
             // Block is underneath us
             return false;
         }
-        if (this.blockTimers[fellIndex] !== 0) {
+        if (!this.isBlockSettled(fellIndex)) {
             // Something crazy happening below
             return false;
         }
@@ -195,13 +208,23 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldModel.prototype.isSettled = function isSettled() {
-        return this.blockTimers.every(function (t) {
-            return t === 0;
-        });
+        return this.blocks.every(function (_, i) {
+            return this.isBlockSettled(i);
+        }, this);
+    };
+
+    PlayfieldModel.prototype.isBlockSettled = function isBlockSettled(index) {
+        return this.blockFallTimers[index] === 0 && this.blockDestroyTimers[index] === 0;
     };
 
     PlayfieldModel.prototype.canSwapBlock = function canSwapBlock(index) {
-        return this.blockTimers[index] >= 0;
+        return this.blockDestroyTimers[index] === 0;
+    };
+
+    PlayfieldModel.prototype.swapTimer = function swapTimer(index) {
+        if (this.isBlockSettled(index)) {
+            this.blockFallTimers[index] = 200;
+        }
     };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {

@@ -46,12 +46,9 @@ define([ 'model/block' ], function (blockModel) {
             return;
         }
 
-        if (this.model.blockTimers[index1] === 0) {
-            this.model.blockTimers[index1] = 200;
-        }
-        if (this.model.blockTimers[index2] === 0) {
-            this.model.blockTimers[index2] = 200;
-        }
+        this.model.swapTimer(index1);
+        this.model.swapTimer(index2);
+
         this.model.swapBlocks(x1, y, x2, y);
         this.view.swapBlocks(x1, y, x2, y);
 
@@ -70,46 +67,45 @@ define([ 'model/block' ], function (blockModel) {
     PlayfieldController.prototype.update = function update(dt) {
         var blocks = this.model.blocks;
         var blockTimers = this.model.blockTimers;
-        var i;
-        for (i = 0; i < blockTimers.length; ++i) {
-            var t = blockTimers[i];
-            var x = this.model.indexToX(i);
-            var y = this.model.indexToY(i);
+        this.model.blocks.forEach(function (block, index) {
+            var x = this.model.indexToX(index);
+            var y = this.model.indexToY(index);
 
-            if (t >= 0) {
-                // (Potentially) falling block
-                t = Math.max(0, t - dt);
-                if (t === 0 && this.model.shouldBlockFall(i)) {
-                    // Because the indices are sorted, we're
-                    // falling from the bottom row.  We're safe
-                    // from state conflicts.
-                    this.model.fallBlock(i);
-                    this.view.fallBlock(x, y);
+            // Check destroying blocks
+            var destroyT = this.model.blockDestroyTimers[index];
+            var newDestroyT = Math.max(0, destroyT - dt)
+            if (newDestroyT === 0 && destroyT !== 0) {
+                this.model.destroyBlock(x, y);
+                this.view.endDestroyBlock(x, y);
+            }
+            this.model.blockDestroyTimers[index] = newDestroyT;
 
-                    var newIndex = this.model.xyToIndex(x, y - 1);
-                    if (this.model.shouldBlockFall(newIndex)) {
-                        // If we need to continue falling, reset the
-                        // timer.
-                        blockTimers[newIndex] = 50;
-                    }
-                }
-            } else {
-                // Destroying block
-                t = Math.min(0, t + dt);
-                if (t === 0) {
-                    this.model.destroyBlock(x, y);
-                    this.view.endDestroyBlock(x, y);
+            // Check falling blocks
+            var fallT = this.model.blockFallTimers[index];
+            var newFallT = Math.max(0, fallT - dt);
+            if (newFallT === 0 && this.model.shouldBlockFall(index)) {
+                // Because the indices are sorted, we're
+                // falling from the bottom row.  We're safe
+                // from state conflicts.
+                this.model.fallBlock(index);
+                this.view.fallBlock(x, y);
+
+                var newIndex = this.model.xyToIndex(x, y - 1);
+                if (this.model.shouldBlockFall(newIndex)) {
+                    // If we need to continue falling, reset
+                    // the timer.
+                    this.model.blockFallTimers[newIndex] = 50;
                 }
             }
-            blockTimers[i] = t;
-        }
+            this.model.blockFallTimers[index] = newFallT;
+        }, this);
 
         var destroyedIndices = this.model.getDestroyedBlockIndices();
         destroyedIndices.forEach(function (index) {
             var x = this.model.indexToX(index);
             var y = this.model.indexToY(index);
             this.view.startDestroyBlock(x, y);
-            this.model.blockTimers[index] = -500;
+            this.model.blockDestroyTimers[index] = 500;
         }, this);
     };
 
