@@ -99,7 +99,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                 } else {
                     function on_continue() {
                         Q.when(
-                            sm.continue(),
+                            sm['continue'](),
                             sm.start.bind(sm),
                             die
                         );
