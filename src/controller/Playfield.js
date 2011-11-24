@@ -110,13 +110,18 @@ define([ 'model/block' ], function (blockModel) {
             this.model.blockFallTimers[index] = newFallT;
         }, this);
 
+        var initHaltDuration = 400;
+        var deltaHaltDuration = 300;
+        var postHaltDuration = 300;
+
         var destroyedIndices = this.model.getDestroyedBlockIndices();
-        destroyedIndices.forEach(function (index) {
+        var destroyDuration = initHaltDuration + postHaltDuration + deltaHaltDuration * destroyedIndices.length;
+        destroyedIndices.forEach(function (index, i) {
             var x = this.model.indexToX(index);
             var y = this.model.indexToY(index);
             this.view.haltBlock(x, y);
-            this.model.blockDestroyTimers[index] = 1000;
-            this.blockHaltTimers[index] = 500;
+            this.model.blockDestroyTimers[index] = destroyDuration;
+            this.blockHaltTimers[index] = initHaltDuration + deltaHaltDuration * i;
         }, this);
     };
 
