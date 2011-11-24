@@ -1,4 +1,4 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView) {
+define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry) {
     var GameStateMachine = stateMachine([
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
@@ -19,6 +19,8 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         screen.setPlayfield(view);
 
         function load() {
+            telemetry.record('load_level', { level: currentLevelIndex });
+
             view.resetBlocks();
             var level = levels[currentLevelIndex];
             if (!level) {
@@ -79,6 +81,8 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
 
         var sm = new GameStateMachine('none', {
             enter_failed: function enter_failed() {
+                telemetry.record('fail_level', { level: currentLevelIndex });
+
                 clearKeyHandlers();
 
                 function on_retry() {
@@ -92,6 +96,8 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                 }));
             },
             enter_won: function enter_won() {
+                telemetry.record('won_level', { level: currentLevelIndex });
+
                 clearKeyHandlers();
 
                 if (currentLevelIndex + 1 >= levels.length) {

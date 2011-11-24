@@ -1,4 +1,4 @@
-define([ 'q' ], function (Q) {
+define([ 'q', 'telemetry' ], function (Q, telemetry) {
     var ASSET_ROOT = 'assets/';
     var loads = { };
 
@@ -38,8 +38,12 @@ define([ 'q' ], function (Q) {
         var containerDefer = Q.defer();
         loads[containerFilename] = containerDefer.promise;
 
+        var telToken = telemetry.recordStart('load_asset', { assetName: assetName });
+
         var loader = new sp.Loader();
         loader.contentLoaderInfo.addEventListener(sp.Event.COMPLETE, function handler(event) {
+            telToken.end();
+
             containerDefer.resolve(event.target);
 
             event.target.removeEventListener(event.type, handler);
