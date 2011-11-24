@@ -18,6 +18,10 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         var view = new PlayfieldView();
         screen.setPlayfield(view);
 
+        view.events.blockHoldMove.subscribe(function (x, y, oldX, oldY) {
+            console.log(oldX, oldY, '=>', x, y);
+        });
+
         function load() {
             view.resetBlocks();
             var level = levels[currentLevelIndex];

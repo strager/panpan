@@ -1,4 +1,4 @@
-define([ 'view/block', 'asset' ], function (blockView, asset) {
+define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, PubSub) {
     function PlayfieldView(options) {
         extendDefault(this, {
             blockWidth: null,
@@ -49,6 +49,97 @@ define([ 'view/block', 'asset' ], function (blockView, asset) {
         this.turnCount = 0;
         this.maxTurnCount = 0;
         this.updateTurnCount();
+
+        this.events = {
+            blockHoldBegin: new PubSub(), // x, y
+            blockHoldMove: new PubSub(),  // x, y
+            blockHoldEnd: new PubSub()    // x, y
+        };
+
+        var tpid = null;
+        var active = false;
+        var blockX, blockY;
+        var oldBlockX, oldBlockY;
+        var self = this;
+
+        function removeMouseListeners() {
+            self.mcBlocks.stage.removeEventListener(sp.MouseEvent.MOUSE_UP, mouseUp);
+            self.mcBlocks.stage.removeEventListener(sp.TouchEvent.TOUCH_END, mouseUp);
+            self.mcBlocks.stage.removeEventListener(sp.MouseEvent.MOUSE_MOVE, mouseMove);
+            self.mcBlocks.stage.removeEventListener(sp.TouchEvent.TOUCH_MOVE, mouseMove);
+        }
+
+        // We reuse this point to reduce allocations.
+        // (Fuck your interfaces, Flash.  And fuck tupleless
+        // languages.)
+        var p = new sp.Point();
+
+        // Sets blockX, blockY to equal the block's
+        // (game-space) coordinates.
+        function stagePointToBlock(stageX, stageY) {
+            p.x = stageX;
+            p.y = stageY;
+            var local = self.mcBlocks.globalToLocal(p);
+            blockX = Math.round(local.x / self.blockWidth);
+            blockY = -Math.round(local.y / self.blockHeight);
+        }
+
+        function mouseUp(event) {
+            if (!active || event.touchPointID !== tpid) {
+                return;
+            }
+            active = false;
+            event.stopPropagation();
+
+            stagePointToBlock(event.stageX, event.stageY);
+
+            if (blockX !== oldBlockX) {
+                self.events.blockHoldMove.publish(blockX, oldBlockY, oldBlockX, oldBlockY);
+            }
+
+            self.events.blockHoldEnd.publish(blockX, oldBlockY);
+        }
+
+        function mouseMove(event) {
+            if (!active || event.touchPointID !== tpid) {
+                return;
+            }
+            event.stopPropagation();
+
+            stagePointToBlock(event.stageX, event.stageY);
+
+            // We ignore Y changes here
+            if (blockX !== oldBlockX) {
+                self.events.blockHoldMove.publish(blockX, oldBlockY, oldBlockX, oldBlockY);
+            }
+
+            oldBlockX = blockX;
+        }
+
+        function mouseDown(event) {
+            if (active || !self.mcBlocks.stage) {
+                return;
+            }
+            active = true;
+            tpid = event.touchPointID;
+
+            event.stopPropagation();
+
+            self.mcBlocks.stage.addEventListener(sp.MouseEvent.MOUSE_UP, mouseUp);
+            self.mcBlocks.stage.addEventListener(sp.TouchEvent.TOUCH_END, mouseUp);
+            self.mcBlocks.stage.addEventListener(sp.MouseEvent.MOUSE_MOVE, mouseMove);
+            self.mcBlocks.stage.addEventListener(sp.TouchEvent.TOUCH_MOVE, mouseMove);
+
+            stagePointToBlock(event.stageX, event.stageY);
+
+            self.events.blockHoldBegin.publish(blockX, blockY);
+
+            oldBlockX = blockX;
+            oldBlockY = blockY;
+        }
+
+        this.mcBlocks.addEventListener(sp.MouseEvent.MOUSE_DOWN, mouseDown);
+        this.mcBlocks.addEventListener(sp.TouchEvent.TOUCH_BEGIN, mouseDown);
     }
 
     PlayfieldView.prototype.placeBlock = function placeBlock(x, y, block) {
