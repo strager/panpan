@@ -44,7 +44,9 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                     die("Shouldn't get a block hold move with different Y values");
                 }
 
-                c.swapBlock(x, y, oldX);
+                if (c.canMakeMove()) {
+                    c.swapBlock(x, y, oldX);
+                }
             }));
 
             var lastTime = null;
