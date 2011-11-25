@@ -18,8 +18,17 @@ define([ 'util/PubSub' ], function (PubSub) {
                 (region.left + region.right) / 2,
                 (region.top + region.bottom) / 2
             );
-        var radius2 = options.radius * options.radius;
+
+        var radius = options.radius;
+        var radius2 = radius * radius;
         var ignoreRadius2 = options.ignoreRadius * options.ignoreRadius;
+
+        if (radius > region.width || radius > region.height) {
+            die("Region is smaller than padControls radius");
+        }
+        if (ignoreRadius2 > radius2) {
+            die("ignoreRadius is larger than radius");
+        }
 
         function down(event) {
             if (!region.contains(event.localX, event.localY)) {
