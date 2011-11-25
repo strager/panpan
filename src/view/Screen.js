@@ -1,5 +1,21 @@
 define([ ], function () {
+    function fitRectangleScale(containerW, containerH, innerW, innerH) {
+        var containerAR = containerW / containerH;
+        var innerAR = innerW / innerH;
+
+        var ratio = innerAR;
+        var target_ratio = containerAR;
+
+        if (ratio > target_ratio) {
+            return containerW / ratio / innerH;
+        } else {
+            return containerH * ratio / innerW;
+        }
+    }
+
     function Screen(stage) {
+        this.stage = stage;
+
         this.popupLayerMc = new sp.Sprite();
         this.playfieldLayerMc = new sp.Sprite();
 
@@ -20,6 +36,11 @@ define([ ], function () {
         var mc = playfield.mc;
         mc.x = this.playfieldX;
         mc.y = this.playfieldY;
+
+        // Playfield scales to fill entire screen
+        var scale = fitRectangleScale(this.stage.stageWidth, this.stage.stageHeight, mc.width, mc.height);
+        mc.scaleX = mc.scaleY = scale;
+
         this.playfieldLayerMc.addChild(mc);
     };
 
@@ -29,6 +50,12 @@ define([ ], function () {
         var mc = popup.mc;
         mc.x = this.popupX;
         mc.y = this.popupY;
+
+        // Pop-ups scale to fill at most 50% of the screen
+        // WTB physical dimensions
+        var scale = 0.5 * fitRectangleScale(this.stage.stageWidth, this.stage.stageHeight, mc.width, mc.height);
+        mc.scaleX = mc.scaleY = scale;
+
         this.popupLayerMc.addChild(mc);
     };
 
