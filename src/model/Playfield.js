@@ -57,6 +57,14 @@ define([ 'model/block' ], function (blockModel) {
         return x + y * this.width;
     };
 
+    PlayfieldModel.prototype.boundX = function boundX(x) {
+        return Math.min(Math.max(x, 0), this.width - 1);
+    };
+
+    PlayfieldModel.prototype.boundY = function boundY(y) {
+        return Math.min(Math.max(y, 0), this.height - 1);
+    };
+
     PlayfieldModel.prototype.moveCursorBy = function moveCursorBy(dx, dy) {
         this.cursorX = Math.min(Math.max(this.cursorX + dx, 0), this.width - 2);
         this.cursorY = Math.min(Math.max(this.cursorY + dy, 0), this.height - 1);

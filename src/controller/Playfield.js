@@ -33,6 +33,14 @@ define([ 'model/block' ], function (blockModel) {
 
     // Make the swaps so block at (x1,y) ends up at (x2,y)
     PlayfieldController.prototype.swapBlock = function swapBlock(x1, y, x2) {
+        x1 = this.model.boundX(x1);
+        x2 = this.model.boundX(x2);
+        y = this.model.boundY(y);
+
+        if (x1 == x2) {
+            return;
+        }
+
         // FIXME FIXME This doesn't handle "jumps", e.g. (0,0) => (2,0)
         if (Math.abs(x1 - x2) !== 1) {
             die("FIXME Bad swap which shouldn't throw this error");
