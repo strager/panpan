@@ -51,7 +51,16 @@ define([ 'util/PubSub' ], function (PubSub) {
                 // Ignore
             } else if (dist2 > radius2) {
                 // Porridge is too hot
-                // TODO
+                // Move the controls so the "hot zone" of the
+                // hit region is centred on where the user
+                // clicked.
+                center.x = event.localX - radius * dirX;
+                center.y = event.localY - radius * dirY;
+
+                // TODO Keep controls within a reasonable
+                // region
+
+                events.direction.publish(dirX, dirY);
             } else {
                 // Porridge is just right
                 events.direction.publish(dirX, dirY);
