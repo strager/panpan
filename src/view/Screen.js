@@ -1,4 +1,4 @@
-define([ 'util/PubSub' ], function (PubSub) {
+define([ 'util/PubSub', 'padControls' ], function (PubSub, padControls) {
     function fitRectangleScale(containerW, containerH, innerW, innerH) {
         var containerAR = containerW / containerH;
         var innerAR = innerW / innerH;
@@ -32,21 +32,21 @@ define([ 'util/PubSub' ], function (PubSub) {
         this.playfieldY = stage.stageHeight;
 
         var ev = this.events = {
-            moveLeft: new PubSub(),
-            moveRight: new PubSub(),
-            moveUp: new PubSub(),
-            moveDown: new PubSub(),
+            moveCursor: new PubSub(),
             doAction: new PubSub()
         };
 
-        var ACTION_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
+        // NOTE: Block sliding controls are in view/Playfield, and D-pad
+        // controls are in setPlayfield below.
 
+        // Keyboard controls
+        var ACTION_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
         stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, function on_key_down(event) {
             switch (event.keyCode) {
-            case sp.Keyboard.LEFT:  ev.moveLeft .publish(); break;
-            case sp.Keyboard.RIGHT: ev.moveRight.publish(); break;
-            case sp.Keyboard.UP:    ev.moveUp   .publish(); break;
-            case sp.Keyboard.DOWN:  ev.moveDown .publish(); break;
+            case sp.Keyboard.LEFT:  ev.moveCursor.publish(-1,  0); break;
+            case sp.Keyboard.RIGHT: ev.moveCursor.publish(+1,  0); break;
+            case sp.Keyboard.UP:    ev.moveCursor.publish( 0, +1); break;
+            case sp.Keyboard.DOWN:  ev.moveCursor.publish( 0, -1); break;
 
             default:
                 if (ACTION_KEYS.indexOf(event.keyCode) >= 0) {
@@ -59,15 +59,55 @@ define([ 'util/PubSub' ], function (PubSub) {
     }
 
     Screen.prototype.setPlayfield = function setPlayfield(playfield) {
+        var stageWidth = this.stage.stageWidth;
+        var stageHeight = this.stage.stageHeight;
+
         var mc = playfield.mc;
         mc.x = this.playfieldX;
         mc.y = this.playfieldY;
 
         // Playfield scales to fill entire screen
-        var scale = fitRectangleScale(this.stage.stageWidth, this.stage.stageHeight, mc.width, mc.height);
+        var scale = fitRectangleScale(stageWidth, stageHeight, mc.width, mc.height);
         mc.scaleX = mc.scaleY = scale;
 
         this.playfieldLayerMc.addChild(mc);
+
+        // Touch controls (depends upon playfield and screen
+        // dimensions)
+        if (this.controls) {
+            this.controls.remove();
+        }
+
+        var ev = this.events;
+
+        var actionRegion = new sp.Rectangle(
+            mc.getBounds().right, 0,
+            stageWidth - mc.getBounds().right, stageHeight
+        );
+        function mouseDown(event) {
+            if (actionRegion.contains(event.localX, event.localY)) {
+                ev.doAction.publish();
+            }
+        }
+        this.stage.addEventListener(sp.MouseEvent.MOUSE_DOWN, mouseDown);
+        this.stage.addEventListener(sp.TouchEvent.TOUCH_BEGIN, mouseDown);
+
+        var controlsRegion = new sp.Rectangle(
+            0, 0,
+            mc.getBounds().left, stageHeight
+        );
+        this.controls = padControls(this.stage, {
+            center: new sp.Point(
+                (controlsRegion.left + controlsRegion.right) * 0.5,
+                (controlsRegion.top + controlsRegion.bottom) * 0.7
+            ),
+            radius: controlsRegion.width * 0.4,
+            ignoreRadius: 0,
+            region: controlsRegion
+        });
+        this.controls.events.direction.subscribe(function (dx, dy) {
+            ev.moveCursor.publish(dx, -dy);
+        });
     };
 
     Screen.prototype.setPopup = function setPopup(popup) {

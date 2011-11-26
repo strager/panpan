@@ -1,4 +1,4 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'padControls' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, padControls) {
+define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry) {
     var GameStateMachine = stateMachine([
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
@@ -27,11 +27,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             var model = PlayfieldModel.fromJSON(level);
             var c = new PlayfieldController(model, view);
 
-            handlers.push(screen.events.moveLeft .subscribe(c.moveCursorBy.bind(c, -1,  0)));
-            handlers.push(screen.events.moveRight.subscribe(c.moveCursorBy.bind(c, +1,  0)));
-            handlers.push(screen.events.moveUp   .subscribe(c.moveCursorBy.bind(c,  0, +1)));
-            handlers.push(screen.events.moveDown .subscribe(c.moveCursorBy.bind(c,  0, -1)));
-
+            handlers.push(screen.events.moveCursor.subscribe(c.moveCursorBy.bind(c)));
             handlers.push(screen.events.doAction.subscribe(function () {
                 if (c.canMakeMove()) {
                     c.swapAtCursor();
@@ -49,36 +45,6 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }));
 
             // TODO Move this to ScreenView or something
-            var controlsRegion = new sp.Rectangle(
-                0, 0,
-                view.mc.getBounds().left, stage.stageHeight
-            );
-            var swapRegion = new sp.Rectangle(
-                view.mc.getBounds().right, 0,
-                stage.stageWidth - view.mc.getBounds().right, stage.stageHeight
-            );
-            function down(event) {
-                if (swapRegion.contains(event.localX, event.localY)) {
-                    if (c.canMakeMove()) {
-                        c.swapAtCursor();
-                    }
-                }
-            }
-            stage.addEventListener(sp.MouseEvent.MOUSE_DOWN, down);
-            stage.addEventListener(sp.TouchEvent.TOUCH_BEGIN, down);
-            var controls = padControls(stage, {
-                center: new sp.Point(
-                    (controlsRegion.left + controlsRegion.right) * 0.5,
-                    (controlsRegion.top + controlsRegion.bottom) * 0.7
-                ),
-                radius: controlsRegion.width * 0.4,
-                ignoreRadius: 0,
-                region: controlsRegion
-            });
-            handlers.push(controls.events.direction.subscribe(function (dx, dy) {
-                c.moveCursorBy(dx, -dy);
-            }));
-            handlers.push(controls);
 
             var lastTime = null;
             var gameLoop = setInterval(function () {
