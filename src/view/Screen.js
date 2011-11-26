@@ -1,4 +1,4 @@
-define([ ], function () {
+define([ 'util/PubSub' ], function (PubSub) {
     function fitRectangleScale(containerW, containerH, innerW, innerH) {
         var containerAR = containerW / containerH;
         var innerAR = innerW / innerH;
@@ -12,6 +12,8 @@ define([ ], function () {
             return containerH * ratio / innerW;
         }
     }
+
+    var ACTION_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
 
     function Screen(stage) {
         this.stage = stage;
@@ -30,6 +32,20 @@ define([ ], function () {
 
         this.playfieldX = stage.stageWidth / 2;
         this.playfieldY = stage.stageHeight;
+
+        var ev = this.events = {
+            moveLeft: new PubSub(),
+            moveRight: new PubSub(),
+            moveUp: new PubSub(),
+            moveDown: new PubSub(),
+            doAction: new PubSub()
+        };
+
+        this.addKeyHandler(sp.Keyboard.LEFT,  ev.moveLeft .publish.bind(ev.moveLeft ), 'down');
+        this.addKeyHandler(sp.Keyboard.RIGHT, ev.moveRight.publish.bind(ev.moveRight), 'down');
+        this.addKeyHandler(sp.Keyboard.UP,    ev.moveUp   .publish.bind(ev.moveUp   ), 'down');
+        this.addKeyHandler(sp.Keyboard.DOWN,  ev.moveDown .publish.bind(ev.moveDown ), 'down');
+        this.addKeyHandler(ACTION_KEYS, ev.doAction.publish.bind(ev.doAction));
     }
 
     Screen.prototype.setPlayfield = function setPlayfield(playfield) {

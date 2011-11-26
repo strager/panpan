@@ -7,9 +7,6 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         { name: 'continue', from: 'won',     to: 'none'    }
     ]);
 
-    var SWAP_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
-    var NEXT_KEYS = SWAP_KEYS;
-
     function game(stage) {
         var screen = new ScreenView(stage);
 
@@ -30,16 +27,16 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             var model = PlayfieldModel.fromJSON(level);
             var c = new PlayfieldController(model, view);
 
-            handlers.push(screen.addKeyHandler(sp.Keyboard.LEFT,  c.moveCursorBy.bind(c, -1,  0), 'down'));
-            handlers.push(screen.addKeyHandler(sp.Keyboard.RIGHT, c.moveCursorBy.bind(c, +1,  0), 'down'));
-            handlers.push(screen.addKeyHandler(sp.Keyboard.UP,    c.moveCursorBy.bind(c,  0, +1), 'down'));
-            handlers.push(screen.addKeyHandler(sp.Keyboard.DOWN,  c.moveCursorBy.bind(c,  0, -1), 'down'));
+            handlers.push(screen.events.moveLeft .subscribe(c.moveCursorBy.bind(c, -1,  0)));
+            handlers.push(screen.events.moveRight.subscribe(c.moveCursorBy.bind(c, +1,  0)));
+            handlers.push(screen.events.moveUp   .subscribe(c.moveCursorBy.bind(c,  0, +1)));
+            handlers.push(screen.events.moveDown .subscribe(c.moveCursorBy.bind(c,  0, -1)));
 
-            handlers.push(screen.addKeyHandler(SWAP_KEYS, function () {
+            handlers.push(screen.events.doAction.subscribe(function () {
                 if (c.canMakeMove()) {
                     c.swapAtCursor();
                 }
-            }, 'down'));
+            }));
 
             handlers.push(view.events.blockHoldMove.subscribe(function (x, y, oldX, oldY) {
                 if (y !== oldY) {
@@ -121,7 +118,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                     Q.fail(sm.retry(), die);
                 }
 
-                handlers.push(screen.addKeyHandler(NEXT_KEYS, on_retry, 'down'));
+                handlers.push(screen.events.doAction.subscribe(on_retry));
 
                 screen.setPopup(new PopupView('failed', {
                     on_retry: on_retry
@@ -143,7 +140,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                         );
                     }
 
-                    handlers.push(screen.addKeyHandler(NEXT_KEYS, on_continue, 'down'));
+                    handlers.push(screen.events.doAction.subscribe(on_continue));
 
                     screen.setPopup(new PopupView('won', {
                         on_continue: on_continue
