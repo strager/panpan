@@ -157,9 +157,12 @@ define([ 'model/block' ], function (blockModel) {
                 } else if (streakIndices.length > minStreakSize) {
                     destroyed[i] = true;
                 }
-            } else {
+            } else if (canDestroy) {
                 streakBlock = block;
                 streakIndices = [ i ];
+            } else {
+                streakBlock = blockModel.EMPTY;
+                streakIndices = [ ];
             }
         }
 
