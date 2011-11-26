@@ -93,6 +93,8 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                 clearKeyHandlers();
 
                 function on_retry() {
+                    clearKeyHandlers();
+
                     Q.fail(sm.retry(), die);
                 }
 
@@ -111,6 +113,8 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                     screen.setPopup(new PopupView('end', { }));
                 } else {
                     function on_continue() {
+                        clearKeyHandlers();
+
                         Q.when(
                             sm['continue'](),
                             sm.start.bind(sm),
