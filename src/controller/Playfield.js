@@ -77,46 +77,52 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldController.prototype.update = function update(dt) {
-        this.model.blocks.forEach(function (block, index) {
-            var x = this.model.indexToX(index);
-            var y = this.model.indexToY(index);
+        var self = this;
+        function visit(index, dt) {
+            var x = self.model.indexToX(index);
+            var y = self.model.indexToY(index);
 
             // Check for halting blocks
-            var haltT = this.blockHaltTimers[index];
+            var haltT = self.blockHaltTimers[index];
             var newHaltT = Math.max(0, haltT - dt);
             if (newHaltT === 0 && haltT !== 0) {
-                this.view.startDestroyBlock(x, y);
+                self.view.startDestroyBlock(x, y);
             }
-            this.blockHaltTimers[index] = newHaltT;
+            self.blockHaltTimers[index] = newHaltT;
 
             // Check destroying blocks
-            var destroyT = this.model.blockDestroyTimers[index];
+            var destroyT = self.model.blockDestroyTimers[index];
             var newDestroyT = Math.max(0, destroyT - dt)
             if (newDestroyT === 0 && destroyT !== 0) {
-                this.model.destroyBlock(x, y);
-                this.view.endDestroyBlock(x, y);
+                self.model.destroyBlock(x, y);
+                self.view.endDestroyBlock(x, y);
             }
-            this.model.blockDestroyTimers[index] = newDestroyT;
+            self.model.blockDestroyTimers[index] = newDestroyT;
 
             // Check falling blocks
-            var fallT = this.model.blockFallTimers[index];
+            var fallT = self.model.blockFallTimers[index];
             var newFallT = Math.max(0, fallT - dt);
-            if (newFallT === 0 && this.model.shouldBlockFall(index)) {
+            if (newFallT === 0 && self.model.shouldBlockFall(index)) {
                 // Because the indices are sorted, we're
                 // falling from the bottom row.  We're safe
                 // from state conflicts.
-                this.model.fallBlock(index);
-                this.view.fallBlock(x, y);
+                self.model.fallBlock(index);
+                self.view.fallBlock(x, y);
 
-                var newIndex = this.model.xyToIndex(x, y - 1);
-                if (this.model.shouldBlockFall(newIndex)) {
+                var newIndex = self.model.xyToIndex(x, y - 1);
+                if (self.model.shouldBlockFall(newIndex)) {
                     // If we need to continue falling, reset
                     // the timer.
-                    this.model.blockFallTimers[newIndex] = 50;
+                    self.model.blockFallTimers[newIndex] = 20;
+                    visit(newIndex, dt - (fallT - newFallT));
                 }
             }
-            this.model.blockFallTimers[index] = newFallT;
-        }, this);
+            self.model.blockFallTimers[index] = newFallT;
+        }
+
+        this.model.blocks.forEach(function (_, index) {
+            visit(index, dt);
+        });
 
         var initHaltDuration = 400;
         var deltaHaltDuration = 300;
