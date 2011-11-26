@@ -49,26 +49,33 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                 }
             }));
 
-            // TODO Move this to ScreenView or something
-
+            var UPDATE_MS = 20;
             var lastTime = null;
-            var gameLoop = setInterval(function () {
+            function step() {
+                var timeout = setTimeout(step, UPDATE_MS);
+
                 var now = Date.now();
-                if (lastTime !== null) {
-                    c.update(now - lastTime);
+                if (lastTime === null) {
+                    lastTime = now;
                 }
-                lastTime = now;
+
+                // Fixed time step
+                while (now - lastTime >= UPDATE_MS) {
+                    c.update(UPDATE_MS);
+                    lastTime += UPDATE_MS;
+                }
 
                 if (c.isSettled()) {
                     if (c.isWin()) {
-                        clearInterval(gameLoop);
+                        clearTimeout(timeout);
                         Q.fail(sm.win(), die);
                     } else if (c.isLoss()) {
-                        clearInterval(gameLoop);
+                        clearTimeout(timeout);
                         Q.fail(sm.fail(), die);
                     }
                 }
-            }, 20);
+            }
+            step();
         }
 
         var handlers = [ ];
