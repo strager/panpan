@@ -27,8 +27,12 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             var model = PlayfieldModel.fromJSON(level);
             var c = new PlayfieldController(model, view);
 
-            handlers.push(screen.events.moveCursor.subscribe(c.moveCursorBy.bind(c)));
+            handlers.push(screen.events.moveCursor.subscribe(function (dx, dy) {
+                view.showCursor();
+                c.moveCursorBy(dx, dy);
+            }));
             handlers.push(screen.events.doAction.subscribe(function () {
+                view.showCursor();
                 if (c.canMakeMove()) {
                     c.swapAtCursor();
                 }
@@ -39,6 +43,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                     die("Shouldn't get a block hold move with different Y values");
                 }
 
+                view.hideCursor();
                 if (c.canMakeMove()) {
                     c.swapBlock(x, y, oldX);
                 }

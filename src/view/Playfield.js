@@ -249,5 +249,13 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
         this.mc.turnCount.text = this.turnCount + '/' + this.maxTurnCount;
     };
 
+    PlayfieldView.prototype.showCursor = function showCursor() {
+        this.cursor.visible = true;
+    };
+
+    PlayfieldView.prototype.hideCursor = function hideCursor() {
+        this.cursor.visible = false;
+    };
+
     return PlayfieldView;
 });
