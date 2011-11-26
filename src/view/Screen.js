@@ -13,8 +13,6 @@ define([ 'util/PubSub' ], function (PubSub) {
         }
     }
 
-    var ACTION_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
-
     function Screen(stage) {
         this.stage = stage;
 
@@ -41,11 +39,23 @@ define([ 'util/PubSub' ], function (PubSub) {
             doAction: new PubSub()
         };
 
-        this.addKeyHandler(sp.Keyboard.LEFT,  ev.moveLeft .publish.bind(ev.moveLeft ), 'down');
-        this.addKeyHandler(sp.Keyboard.RIGHT, ev.moveRight.publish.bind(ev.moveRight), 'down');
-        this.addKeyHandler(sp.Keyboard.UP,    ev.moveUp   .publish.bind(ev.moveUp   ), 'down');
-        this.addKeyHandler(sp.Keyboard.DOWN,  ev.moveDown .publish.bind(ev.moveDown ), 'down');
-        this.addKeyHandler(ACTION_KEYS, ev.doAction.publish.bind(ev.doAction));
+        var ACTION_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
+
+        stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, function on_key_down(event) {
+            switch (event.keyCode) {
+            case sp.Keyboard.LEFT:  ev.moveLeft .publish(); break;
+            case sp.Keyboard.RIGHT: ev.moveRight.publish(); break;
+            case sp.Keyboard.UP:    ev.moveUp   .publish(); break;
+            case sp.Keyboard.DOWN:  ev.moveDown .publish(); break;
+
+            default:
+                if (ACTION_KEYS.indexOf(event.keyCode) >= 0) {
+                    ev.doAction.publish();
+                }
+
+                break;
+            }
+        });
     }
 
     Screen.prototype.setPlayfield = function setPlayfield(playfield) {
@@ -79,68 +89,6 @@ define([ 'util/PubSub' ], function (PubSub) {
         while (this.popupLayerMc.children) {
             this.popupLayerMc.removeChildAt(0);
         }
-    };
-
-    Screen.prototype.addKeyHandler = function addKeyHandler(keys, callback, type, once) {
-        if (!Array.isArray(keys)) {
-            keys = [ keys ];
-        }
-        type = type || 'downup';
-        once = !!once;
-
-        var didDown = false;
-
-        var stage = this.mc.stage;
-
-        function down(event) {
-            if (keys.indexOf(event.keyCode) < 0) {
-                return;
-            }
-
-            didDown = true;
-            if (type === 'down') {
-                if (once) {
-                    remove();
-                }
-
-                callback(event.keyCode);
-            }
-        }
-
-        function up(event) {
-            if (keys.indexOf(event.keyCode) < 0) {
-                return;
-            }
-
-            if (type === 'up' || (type === 'downup' && didDown)) {
-                if (once) {
-                    remove();
-                }
-
-                callback(event.keyCode);
-            }
-            didDown = false;
-        }
-
-        function removeEventListeners() {
-            stage.removeEventListener(sp.KeyboardEvent.KEY_DOWN, down);
-            stage.removeEventListener(sp.KeyboardEvent.KEY_UP, up);
-        }
-
-        function remove() {
-            removeEventListeners();
-        }
-
-        if (type === 'down' || type === 'downup') {
-            stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, down);
-        }
-        if (type === 'up' || type === 'downup') {
-            stage.addEventListener(sp.KeyboardEvent.KEY_UP, up);
-        }
-
-        return {
-            remove: remove
-        };
     };
 
     return Screen;
