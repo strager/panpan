@@ -113,7 +113,7 @@ define([ 'model/block' ], function (blockModel) {
                 if (self.model.shouldBlockFall(newIndex)) {
                     // If we need to continue falling, reset
                     // the timer.
-                    self.model.blockFallTimers[newIndex] = 20;
+                    self.model.blockFallTimers[newIndex] = 0;
                     visit(newIndex, dt - (fallT - newFallT));
                 }
             }
