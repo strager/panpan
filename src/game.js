@@ -79,7 +79,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         }
 
         var handlers = [ ];
-        function clearKeyHandlers() {
+        function clearHandlers() {
             handlers.forEach(function (keyHandler) {
                 keyHandler.remove();
             });
@@ -90,10 +90,10 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             enter_failed: function enter_failed() {
                 telemetry.record('fail_level', { level: currentLevelIndex });
 
-                clearKeyHandlers();
+                clearHandlers();
 
                 function on_retry() {
-                    clearKeyHandlers();
+                    clearHandlers();
 
                     Q.fail(sm.retry(), die);
                 }
@@ -107,13 +107,13 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             enter_won: function enter_won() {
                 telemetry.record('won_level', { level: currentLevelIndex });
 
-                clearKeyHandlers();
+                clearHandlers();
 
                 if (currentLevelIndex + 1 >= levels.length) {
                     screen.setPopup(new PopupView('end', { }));
                 } else {
                     function on_continue() {
-                        clearKeyHandlers();
+                        clearHandlers();
 
                         Q.when(
                             sm['continue'](),
@@ -134,14 +134,14 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             },
 
             on_start: function on_start() {
-                clearKeyHandlers();
+                clearHandlers();
 
                 ++currentLevelIndex;
                 load();
             },
 
             on_retry: function on_retry() {
-                clearKeyHandlers();
+                clearHandlers();
 
                 load();
             }
