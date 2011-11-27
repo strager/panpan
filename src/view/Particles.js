@@ -39,20 +39,18 @@ define([ 'asset', 'util/PubSub' ], function (asset, PubSub) {
         this.updateEvent = new PubSub();
     }
 
-    ParticlesView.prototype.spawnDestroyParticle = function spawnDestroyParticle(x, y, n) {
+    ParticlesView.prototype.spawnDestroyParticle = function spawnDestroyParticle(x, y, n, spinEnd, holdEnd) {
         var ParticleStarMovieClip = asset.get(this.themeFile + ':ParticleStar');
 
         var mc = new ParticleStarMovieClip();
         this.mc.addChild(mc);
 
         var spent = 0;
-        var spinEnd = 700;
-        var holdEnd = 1500;
 
         var startAngle = Math.PI * 2 * n;
         var endAngle = startAngle + Math.PI * 1;
 
-        var startRadius = 300;
+        var startRadius = 200;
         var endRadius = 0;
 
         var startAlpha = 0;

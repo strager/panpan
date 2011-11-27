@@ -214,7 +214,9 @@ define([ 'model/block' ], function (blockModel) {
             this.particleEngine.spawnDestroyParticle(
                 pos.x - this.view.blockWidth / 2,
                 pos.y - this.view.blockHeight / 2,
-                i / particlePoints.length
+                i / particlePoints.length,
+                initHaltDuration,
+                destroyDuration + postHaltDuration
             );
         }
     };
