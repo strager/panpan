@@ -182,7 +182,21 @@ define([ 'model/block' ], function (blockModel) {
                 var nx = x + dx;
                 var ny = y + dy;
                 if (isDestroyedCorner(nx, ny)) {
-                    particlePoints.push(nx, ny);
+                    // Don't add a duplicate point
+                    // TODO Put this logic somewhere else so
+                    // it's more efficient
+                    var isDuplicate = false;
+                    var i;
+                    for (i = 0; i < particlePoints.length; i += 2) {
+                        if (particlePoints[i + 0] === nx && particlePoints[i + 1] === ny) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDuplicate) {
+                        particlePoints.push(nx, ny);
+                    }
                 }
             }
 
@@ -192,7 +206,6 @@ define([ 'model/block' ], function (blockModel) {
             check(1, -1);
         }, this);
 
-        // TODO Remove duplicates
         var i;
         for (i = 0; i < particlePoints.length; i += 2) {
             var x = particlePoints[i + 0];
