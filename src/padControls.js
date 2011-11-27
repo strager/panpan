@@ -54,11 +54,20 @@ define([ 'util/PubSub' ], function (PubSub) {
                 // Move the controls so the "hot zone" of the
                 // hit region is centred on where the user
                 // clicked.
-                center.x = event.localX - radius * dirX;
-                center.y = event.localY - radius * dirY;
+                center.x = event.localX - radius * dirX * 0.5;
+                center.y = event.localY - radius * dirY * 0.5;
 
-                // TODO Keep controls within a reasonable
-                // region
+                // Keep controls within the region
+                if (center.x + radius / 2 > region.right) {
+                    center.x = region.right - radius / 2;
+                } else if (center.x - radius / 2 < region.left) {
+                    center.x = region.left + radius / 2;
+                }
+                if (center.y + radius / 2 > region.bottom) {
+                    center.y = region.right - radius / 2;
+                } else if (center.y - radius / 2 < region.top) {
+                    center.y = region.left + radius / 2;
+                }
 
                 events.direction.publish(dirX, dirY);
             } else {
