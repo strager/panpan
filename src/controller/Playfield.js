@@ -137,11 +137,73 @@ define([ 'model/block' ], function (blockModel) {
             this.view.haltBlock(x, y);
             this.model.blockDestroyTimers[index] = destroyDuration;
             this.blockHaltTimers[index] = initHaltDuration + deltaHaltDuration * i;
-
-            // Particle party!
-            var pos = this.view.getStagePosition(x, y);
-            this.particleEngine.spawnDestroyParticle(pos.x, pos.y, i / destroyedIndices.length);
         }, this);
+
+        // Particles at corners
+        // If a corner has 1 or 3 destroying blocks around it,
+        // it should have a particle.
+        function isDestroyedCorner(x, y) {
+            // Checks the bottom-left corner of the block at x, y.
+            // That is, the block at x, y is the top-right
+            // block of the corner.
+
+            // We deal with x, y here because indices cannot be
+            // off the edge of the playfield (but corners
+            // can!).
+
+            function isFilled(dx, dy) {
+                var nx = x + dx;
+                var ny = y + dy;
+                var index = self.model.xyToIndex(nx, ny);
+                return nx >= 0
+                    && ny >= 0
+                    && nx < self.model.width
+                    && ny < self.model.height
+                    && destroyedIndices.indexOf(index) >= 0
+            }
+
+            var tr = isFilled( 0, 0);
+            var tl = isFilled(-1, 0);
+            var br = isFilled( 0, 1);
+            var bl = isFilled(-1, 1);
+
+            // NOTE: JavaScript casts booleans to numbers
+            // C-style (true = 1, false = 0)
+            var sum = br + bl + tr + tl;
+            return sum === 1 || sum === 3;
+        }
+
+        var particlePoints = [ ]; // x, y, x, y, x, y
+        destroyedIndices.forEach(function (index) {
+            var x = this.model.indexToX(index);
+            var y = this.model.indexToY(index);
+
+            function check(dx, dy) {
+                var nx = x + dx;
+                var ny = y + dy;
+                if (isDestroyedCorner(nx, ny)) {
+                    particlePoints.push(nx, ny);
+                }
+            }
+
+            check(0, 0);
+            check(1, 0);
+            check(0, -1);
+            check(1, -1);
+        }, this);
+
+        // TODO Remove duplicates
+        var i;
+        for (i = 0; i < particlePoints.length; i += 2) {
+            var x = particlePoints[i + 0];
+            var y = particlePoints[i + 1];
+            var pos = this.view.getStagePosition(x, y);
+            this.particleEngine.spawnDestroyParticle(
+                pos.x - this.view.blockWidth / 2,
+                pos.y - this.view.blockHeight / 2,
+                i / particlePoints.length
+            );
+        }
     };
 
     PlayfieldController.prototype.isSettled = function isSettled() {
