@@ -31,8 +31,8 @@ define([ 'model/block' ], function (blockModel) {
             this.blockDestroyTimers.push(0);
         }
 
-        this.cursorX = 0;
-        this.cursorY = 0;
+        this.cursorX = this.boundX(Math.floor((this.width - 1) / 2));
+        this.cursorY = this.boundY(Math.floor((this.height - 1) / 2));
 
         this.maxTurns = 0;
         this.minStreakSize = 3;
