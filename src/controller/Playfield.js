@@ -1,7 +1,8 @@
 define([ 'model/block' ], function (blockModel) {
-    function PlayfieldController(model, view) {
+    function PlayfieldController(model, view, particleEngine) {
         this.model = model;
         this.view = view;
+        this.particleEngine = particleEngine;
 
         model.blocks.forEach(function (block, i) {
             if (block === blockModel.EMPTY) {
@@ -136,6 +137,10 @@ define([ 'model/block' ], function (blockModel) {
             this.view.haltBlock(x, y);
             this.model.blockDestroyTimers[index] = destroyDuration;
             this.blockHaltTimers[index] = initHaltDuration + deltaHaltDuration * i;
+
+            // Particle party!
+            var pos = this.view.getStagePosition(x, y);
+            this.particleEngine.spawnDestroyParticle(pos.x, pos.y, i / destroyedIndices.length);
         }, this);
     };
 

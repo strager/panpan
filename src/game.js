@@ -1,4 +1,4 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry) {
+define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
     var GameStateMachine = stateMachine([
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
@@ -9,6 +9,17 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
 
     function game(stage) {
         var screen = new ScreenView(stage);
+        var particleEngine = new ParticleEngine();
+        screen.setParticleEngine(particleEngine);
+
+        var lastTime = null;
+        stage.addEventListener(sp.Event.ENTER_FRAME, function () {
+            var now = Date.now();
+            if (lastTime !== null) {
+                particleEngine.update(now - lastTime);
+            }
+            lastTime = now;
+        });
 
         var currentLevelIndex = -1;
 
@@ -25,7 +36,7 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
             }
 
             var model = PlayfieldModel.fromJSON(level);
-            var c = new PlayfieldController(model, view);
+            var c = new PlayfieldController(model, view, particleEngine);
 
             handlers.push(screen.events.moveCursor.subscribe(function (dx, dy) {
                 view.showCursor();

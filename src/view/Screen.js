@@ -17,10 +17,12 @@ define([ 'util/PubSub', 'padControls' ], function (PubSub, padControls) {
         this.stage = stage;
 
         this.popupLayerMc = new sp.Sprite();
+        this.particlesLayerMc = new sp.Sprite();
         this.playfieldLayerMc = new sp.Sprite();
 
         this.mc = new sp.Sprite();
         this.mc.addChild(this.playfieldLayerMc);
+        this.mc.addChild(this.particlesLayerMc);
         this.mc.addChild(this.popupLayerMc);
 
         stage.addChild(this.mc);
@@ -57,6 +59,10 @@ define([ 'util/PubSub', 'padControls' ], function (PubSub, padControls) {
             }
         });
     }
+
+    Screen.prototype.setParticleEngine = function setParticleEngine(particleEngine) {
+        this.particlesLayerMc.addChild(particleEngine.mc);
+    };
 
     Screen.prototype.setPlayfield = function setPlayfield(playfield) {
         var stageWidth = this.stage.stageWidth;

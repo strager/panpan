@@ -178,6 +178,10 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
         row[x] = view;
     };
 
+    PlayfieldView.prototype.getStagePosition = function getStagePosition(x, y) {
+        return this.mcBlocks.localToGlobal(new sp.Point(x * this.blockWidth, -y * this.blockHeight));
+    };
+
     PlayfieldView.prototype.position = function position(mc, x, y) {
         mc.x = x * this.blockWidth;
         mc.y = -y * this.blockHeight;
