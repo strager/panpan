@@ -99,7 +99,10 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldModel.prototype.destroyBlock = function destroyBlock(x, y) {
-        this.blocks[this.xyToIndex(x, y)] = blockModel.EMPTY;
+        var index = this.xyToIndex(x, y);
+        this.blocks[index] = blockModel.EMPTY;
+        this.blockFallTimers[index] = 0;
+        this.blockDestroyTimers[index] = 0;
     };
 
     PlayfieldModel.prototype.getFloatingBlockIndices = function getFloatingBlockIndices() {
@@ -197,6 +200,10 @@ define([ 'model/block' ], function (blockModel) {
     PlayfieldModel.prototype.shouldBlockFall = function shouldBlockFall(index) {
         if (this.blocks[index] === blockModel.EMPTY) {
             // No block here
+            return false;
+        }
+        if (!this.isBlockSettled(index)) {
+            // Something's going on with us
             return false;
         }
 
