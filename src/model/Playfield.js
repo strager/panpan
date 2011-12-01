@@ -202,11 +202,14 @@ define([ 'model/block' ], function (blockModel) {
             // No block here
             return false;
         }
-        if (!this.isBlockSettled(index)) {
-            // Something's going on with us
+        if (this.isActionPending(index)) {
             return false;
         }
 
+        return this.canBlockFall(index);
+    };
+
+    PlayfieldModel.prototype.canBlockFall = function canBlockFall(index) {
         var fellIndex = index - this.width;
         if (fellIndex < 0) {
             // Off edge of screen
@@ -216,8 +219,7 @@ define([ 'model/block' ], function (blockModel) {
             // Block is underneath us
             return false;
         }
-        if (!this.isBlockSettled(fellIndex)) {
-            // Something crazy happening below
+        if (this.blockFallTimers[fellIndex] !== 0) {
             return false;
         }
 
@@ -227,12 +229,19 @@ define([ 'model/block' ], function (blockModel) {
 
     PlayfieldModel.prototype.isSettled = function isSettled() {
         return this.blocks.every(function (_, i) {
+            if (window.STOP) console.log(i);
             return this.isBlockSettled(i);
         }, this);
     };
 
     PlayfieldModel.prototype.isBlockSettled = function isBlockSettled(index) {
-        return this.blockFallTimers[index] === 0 && this.blockDestroyTimers[index] === 0;
+        return this.blocks[index] === blockModel.EMPTY
+            || (!this.canBlockFall(index) && !this.isActionPending(index));
+    };
+
+    PlayfieldModel.prototype.isActionPending = function isActionPending(index) {
+        return this.blockFallTimers[index] !== 0
+            || this.blockDestroyTimers[index] !== 0;
     };
 
     PlayfieldModel.prototype.canSwapBlock = function canSwapBlock(index) {
