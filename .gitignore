@@ -1,3 +1,4 @@
 *.jvo
 *.sgf
 RECOVER_*.fla
+/prod_tmp
