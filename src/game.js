@@ -12,19 +12,21 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
         var particleEngine = new ParticleEngine();
         screen.setParticleEngine(particleEngine);
 
+        var view = new PlayfieldView();
+        screen.setPlayfield(view);
+
         var lastTime = null;
         stage.addEventListener(sp.Event.ENTER_FRAME, function () {
             var now = Date.now();
             if (lastTime !== null) {
-                particleEngine.update(now - lastTime);
+                var dt = now - lastTime;
+                particleEngine.update(dt);
+                view.update(dt);
             }
             lastTime = now;
         });
 
         var currentLevelIndex = -1;
-
-        var view = new PlayfieldView();
-        screen.setPlayfield(view);
 
         function load() {
             telemetry.record('load_level', { level: currentLevelIndex });

@@ -43,5 +43,22 @@ define([ ], function () {
         this.data.length = 0;
     };
 
+    Array2D.prototype.forEach = function forEach(callback, context) {
+        var calls = [ ];
+
+        var x, y;
+        var data = this.data;
+        for (y in data) {
+            var row = data[y];
+            for (x in row) {
+                calls.push([ row[x], x, y ]);
+            }
+        }
+
+        calls.forEach(function (args) {
+            callback.apply(context, args);
+        });
+    };
+
     return Array2D;
 });

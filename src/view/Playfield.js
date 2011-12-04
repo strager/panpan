@@ -1,4 +1,4 @@
-define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (blockView, asset, PubSub, Array2D) {
+define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D', 'view/Animation', 'util/ease' ], function (blockView, asset, PubSub, Array2D, Animation, ease) {
     function PlayfieldView(options) {
         extendDefault(this, {
             blockWidth: null,
@@ -45,6 +45,7 @@ define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (block
         this.mc.addChildAt(this.mcBlocks, cornerIndex);
 
         this.blocks = new Array2D();
+        this.blockAnimations = new Array2D();
 
         this.turnCount = 0;
         this.maxTurnCount = 0;
@@ -150,7 +151,14 @@ define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (block
     };
 
     PlayfieldView.prototype.getStagePosition = function getStagePosition(x, y) {
-        return this.mcBlocks.localToGlobal(new sp.Point(x * this.blockWidth, -y * this.blockHeight));
+        return this.mcBlocks.localToGlobal(this.getLocalPosition(x, y));
+    };
+
+    PlayfieldView.prototype.getLocalPosition = function getLocalPosition(x, y) {
+        return new sp.Point(
+            x * this.blockWidth,
+            -y * this.blockHeight
+        );
     };
 
     PlayfieldView.prototype.position = function position(mc, x, y) {
@@ -166,13 +174,22 @@ define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (block
         var v1 = this.blocks.get(x1, y1, null);
         var v2 = this.blocks.get(x2, y2, null);
 
+        this.haltAnimationsAt(x1, y1);
+        this.haltAnimationsAt(x2, y2);
+
         if (v1) {
             this.blocks.remove(x1, y1);
-            this.position(v1, x2, y2);
+
+            var end = this.getLocalPosition(x2, y2);
+            var anim = Animation.move(v1, end.x, end.y, 200, ease.sinOut);
+            this.blockAnimations.set(x2, y2, anim);
         }
         if (v2) {
             this.blocks.remove(x2, y2);
-            this.position(v2, x1, y1);
+
+            var end = this.getLocalPosition(x1, y1);
+            var anim = Animation.move(v2, end.x, end.y, 200, ease.sinOut);
+            this.blockAnimations.set(x1, y1, anim);
         }
 
         if (v1) {
@@ -204,6 +221,11 @@ define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (block
     };
 
     PlayfieldView.prototype.resetBlocks = function resetBlocks() {
+        this.blockAnimations.forEach(function (anim) {
+            anim.halt();
+        });
+        this.blockAnimations.clear();
+
         this.blocks.clear();
         while (this.mcBlocks.children) {
             this.mcBlocks.removeChildAt(0);
@@ -230,6 +252,20 @@ define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (block
 
     PlayfieldView.prototype.hideCursor = function hideCursor() {
         this.cursor.visible = false;
+    };
+
+    PlayfieldView.prototype.haltAnimationsAt = function haltAnimationsAt(x, y) {
+        var anim = this.blockAnimations.get(x, y, null);
+        if (anim) {
+            anim.halt();
+            this.blockAnimations.remove(x, y);
+        }
+    };
+
+    PlayfieldView.prototype.update = function update(dt) {
+        this.blockAnimations.forEach(function (anim) {
+            anim.update(dt);
+        });
     };
 
     return PlayfieldView;
