@@ -1,4 +1,4 @@
-define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, PubSub) {
+define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D' ], function (blockView, asset, PubSub, Array2D) {
     function PlayfieldView(options) {
         extendDefault(this, {
             blockWidth: null,
@@ -44,7 +44,7 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
         this.mc.addChildAt(this.mcOverlay, cornerIndex);
         this.mc.addChildAt(this.mcBlocks, cornerIndex);
 
-        this.blocks = [ ];
+        this.blocks = new Array2D();
 
         this.turnCount = 0;
         this.maxTurnCount = 0;
@@ -145,37 +145,8 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
     PlayfieldView.prototype.placeBlock = function placeBlock(x, y, block) {
         var view = blockView.fromModel(block, this.blockOptions);
         this.position(view, x, y);
-        this.setBlockViewAt(x, y, view);
+        this.blocks.set(x, y, view);
         this.mcBlocks.addChild(view);
-    };
-
-    PlayfieldView.prototype.getBlockViewAt = function getBlockViewAt(x, y) {
-        if (this.blocks.length <= y)    return null;
-        if (this.blocks[y].length <= x) return null;
-        return this.blocks[y][x];
-    };
-
-    PlayfieldView.prototype.removeBlockViewAt = function removeBlockViewAt(x, y) {
-        if (this.getBlockViewAt(x, y)) {
-            this.blocks[y][x] = null;
-        }
-    };
-
-    PlayfieldView.prototype.setBlockViewAt = function setBlockViewAt(x, y, view) {
-        var grid = this.blocks;
-        while (grid.length <= y) {
-            grid.push([ ]);
-        }
-        var row = grid[y];
-        while (row.length <= x) {
-            row.push(null);
-        }
-
-        if (row[x]) {
-            die("Cannot insert block view; something already exists here");
-        }
-
-        row[x] = view;
     };
 
     PlayfieldView.prototype.getStagePosition = function getStagePosition(x, y) {
@@ -192,23 +163,23 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
     };
 
     PlayfieldView.prototype.swapBlocks = function swapBlocks(x1, y1, x2, y2) {
-        var v1 = this.getBlockViewAt(x1, y1);
-        var v2 = this.getBlockViewAt(x2, y2);
+        var v1 = this.blocks.get(x1, y1, null);
+        var v2 = this.blocks.get(x2, y2, null);
 
         if (v1) {
-            this.removeBlockViewAt(x1, y1);
+            this.blocks.remove(x1, y1);
             this.position(v1, x2, y2);
         }
         if (v2) {
-            this.removeBlockViewAt(x2, y2);
+            this.blocks.remove(x2, y2);
             this.position(v2, x1, y1);
         }
 
         if (v1) {
-            this.setBlockViewAt(x2, y2, v1);
+            this.blocks.set(x2, y2, v1);
         }
         if (v2) {
-            this.setBlockViewAt(x1, y1, v2);
+            this.blocks.set(x1, y1, v2);
         }
     };
 
@@ -217,23 +188,23 @@ define([ 'view/block', 'asset', 'util/PubSub' ], function (blockView, asset, Pub
     };
 
     PlayfieldView.prototype.haltBlock = function haltBlock(x, y) {
-        var view = this.getBlockViewAt(x, y);
+        var view = this.blocks.get(x, y);
         view.gotoAndPlay('halt');
     };
 
     PlayfieldView.prototype.startDestroyBlock = function startDestroyBlock(x, y) {
-        var view = this.getBlockViewAt(x, y);
+        var view = this.blocks.get(x, y);
         view.gotoAndPlay('destroy');
     };
 
     PlayfieldView.prototype.endDestroyBlock = function endDestroyBlock(x, y) {
-        var view = this.getBlockViewAt(x, y);
+        var view = this.blocks.get(x, y);
         this.mcBlocks.removeChild(view);
-        this.removeBlockViewAt(x, y);
+        this.blocks.remove(x, y);
     };
 
     PlayfieldView.prototype.resetBlocks = function resetBlocks() {
-        this.blocks = [ ];
+        this.blocks.clear();
         while (this.mcBlocks.children) {
             this.mcBlocks.removeChildAt(0);
         }
