@@ -1,34 +1,6 @@
-define([ 'asset', 'util/PubSub' ], function (asset, PubSub) {
+define([ 'asset', 'util/PubSub', 'view/Animation', 'util/ease' ], function (asset, PubSub, Animation, ease) {
     // TODO Object pooling
     // (sounds like a good idea, right?)
-
-    function clamp(x) {
-        return Math.min(Math.max(x, 0), 1);
-    }
-
-    function scaleUp(a, b, value) {
-        return value * (b - a) + a;
-    }
-
-    function scaleDown(a, b, value) {
-        return (value - a) / (b - a);
-    }
-
-    function lerp(x) {
-        return x;
-    }
-
-    function sinIn(x) {
-        return 1 - Math.sin(Math.PI / 2 * (x + 1));
-    }
-
-    function sinOut(x) {
-        return Math.sin(Math.PI / 2 * x);
-    }
-
-    function smoothstep(x) {
-        return x * x * x * (x * (x * 6 - 15) + 10);
-    }
 
     function ParticlesView(options) {
         extendDefault(this, {
@@ -45,7 +17,8 @@ define([ 'asset', 'util/PubSub' ], function (asset, PubSub) {
         var mc = new ParticleStarMovieClip();
         this.mc.addChild(mc);
 
-        var spent = 0;
+        var spinEndP = ease.scaleDown(0, holdEnd, spinEnd);
+        var holdEndP = 1;
 
         var startAngle = Math.PI * 2 * n;
         var endAngle = startAngle + Math.PI * 1;
@@ -56,35 +29,30 @@ define([ 'asset', 'util/PubSub' ], function (asset, PubSub) {
         var startAlpha = 0;
         var endAlpha = 1;
 
-        function refresh() {
-            var spin = clamp(scaleDown(0, spinEnd, spent));
-            var hold = clamp(scaleDown(0, holdEnd, spent));
-            var close = clamp(scaleDown(spinEnd, holdEnd, spent));
+        var anim = new Animation(function refresh(p) {
+            var spin = ease.clamp(ease.scaleDown(0, spinEndP, p));
+            var hold = ease.clamp(ease.scaleDown(0, holdEndP, p));
+            var close = ease.clamp(ease.scaleDown(spinEndP, holdEndP, p));
 
-            var angle = scaleUp(startAngle, endAngle, lerp(hold));
-            var radius = scaleUp(startRadius, endRadius, sinOut(spin));
-            var alpha = spent <= spinEnd
-                ? scaleUp(startAlpha, endAlpha, sinOut(spin))
-                : scaleUp(endAlpha, startAlpha, sinIn(close));
+            var angle = ease.scaleUp(startAngle, endAngle, ease.lerp(hold));
+            var radius = ease.scaleUp(startRadius, endRadius, ease.sinOut(spin));
+            var alpha = p <= spinEndP
+                ? ease.scaleUp(startAlpha, endAlpha, ease.sinOut(spin))
+                : ease.scaleUp(endAlpha, startAlpha, ease.sinIn(close));
 
             mc.rotation = angle * 180 / Math.PI; // Fuck degrees!
             mc.x = x + Math.cos(angle) * radius;
             mc.y = y + Math.sin(angle) * radius;
             mc.alpha = alpha;
-        }
-
-        refresh();
+        }, holdEnd);
 
         var handle = this.updateEvent.subscribe(function updateDestroyParticle(dt) {
-            spent += dt;
-
-            if (spent >= holdEnd) {
+            anim.update(dt);
+            if (!anim.isActive()) {
                 mc.parent.removeChild(mc);
                 handle.remove();
-            } else {
-                refresh();
             }
-        }.bind(this));
+        });
 
         return handle;
     };
