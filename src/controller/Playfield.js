@@ -125,9 +125,9 @@ define([ 'model/block' ], function (blockModel) {
             visit(index, dt);
         });
 
-        var initHaltDuration = 400;
-        var deltaHaltDuration = 300;
-        var postHaltDuration = 300;
+        var initHaltDuration = 300;
+        var deltaHaltDuration = 150;
+        var postHaltDuration = 200;
 
         var destroyedIndices = this.model.getDestroyedBlockIndices();
         var destroyDuration = initHaltDuration + postHaltDuration + deltaHaltDuration * destroyedIndices.length;
