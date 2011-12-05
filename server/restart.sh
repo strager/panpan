@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 function forever_wrapped {
     # forever doesn't give proper exit codes,
