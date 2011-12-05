@@ -2,3 +2,4 @@
 *.sgf
 RECOVER_*.fla
 /prod_tmp
+node_modules
