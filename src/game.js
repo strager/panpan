@@ -37,6 +37,8 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
                 die("Failed to load level " + currentLevelIndex);
             }
 
+            view.setLevelName(currentLevelIndex + 1); // Humans are 1-based
+
             var model = PlayfieldModel.fromJSON(level);
             var c = new PlayfieldController(model, view, particleEngine);
 

@@ -242,6 +242,10 @@ define([ 'view/block', 'asset', 'util/PubSub', 'util/Array2D', 'view/Animation',
         this.updateTurnCount();
     };
 
+    PlayfieldView.prototype.setLevelName = function setLevelName(levelName) {
+        this.mc.levelName.text = 'Level ' + levelName;
+    };
+
     PlayfieldView.prototype.updateTurnCount = function updateTurnCount() {
         this.mc.turnCount.text = this.turnCount + '/' + this.maxTurnCount;
     };
