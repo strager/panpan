@@ -75,7 +75,8 @@ function extend(target /* extensions */) {
     require({
         baseUrl: 'src',
         aliases: {
-            'q': './vendor/q/q'
+            'q': './vendor/q/q',
+            'config': './config'
         }
     }, [ 'main' ], function (main) {
         onReady = main;
