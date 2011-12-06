@@ -1,5 +1,16 @@
 var PORT = 3080;
 
+function getRequestAddress(req) {
+    var addr = req.connection.remoteAddress;
+    if (/^127\.0\.0\.[0-9]{1,3}$/.test(addr)) {
+        // If this is a local IP, X-Real-IP *may* contain the
+        // proxied origin IP address
+        addr = req.headers['x-real-ip'] || addr;
+    }
+
+    return addr;
+}
+
 var express = require('express');
 var app = express.createServer();
 
@@ -39,7 +50,7 @@ app.post('/log', function _log(req, res, next) {
 
         var data = {
             date: date,
-            ip: req.connection.remoteAddress,
+            ip: getRequestAddress(req),
             userData: userData
         };
 
