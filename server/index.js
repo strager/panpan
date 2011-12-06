@@ -37,12 +37,18 @@ app.post('/log', function _log(req, res, next) {
             return;
         }
 
-        // TODO Send to database
-        console.log({
+        var data = {
             date: date,
             ip: req.connection.remoteAddress,
             userData: userData
-        });
+        };
+
+        // TODO Send to database
+
+        // Mark data so we can grep logs for them later
+        // and stick them in a database
+        console.log('>> ' + JSON.stringify(data));
+
         res.end();
     });
 });
