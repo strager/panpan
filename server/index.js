@@ -5,6 +5,7 @@ var app = express.createServer();
 
 app.configure(function () {
     app.use(express.logger());
+    app.use(express.static(__dirname + '/pub'));
     app.use(app.router);
 });
 

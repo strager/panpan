@@ -16,6 +16,7 @@ WWW_FILES = \
 
 SERVER_FILES = \
        $(shell find $(ROOT)/server/. -path '**/node_modules' -prune -or \( -name '*.js' -or -name 'package.json' \) -print) \
+       server/./pub/ \
        server/./restart.sh
 
 all: sgf_jvo
