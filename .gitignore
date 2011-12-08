@@ -1,6 +1,8 @@
 /config.js
 *.jvo
 *.sgf
+*.swfx
+*.act
 RECOVER_*.fla
 /prod_tmp
 node_modules
