@@ -53,7 +53,10 @@ define([ 'config', 'q' ], function (config, Q) {
                 return;
             }
 
+            // TODO Chunk reporting in case it's too large (4K limit?)
+
             var reports = queue.slice();
+            console.log('TELEMETRY', JSON.stringify(reports).length, reports);
 
             var req = new sp.URLRequest(config.telemetry.url);
             req.method = 'POST';

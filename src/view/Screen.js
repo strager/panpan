@@ -1,4 +1,4 @@
-define([ 'util/PubSub', 'padControls' ], function (PubSub, padControls) {
+define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padControls, telemetry) {
     function fitRectangleScale(containerW, containerH, innerW, innerH) {
         var containerAR = containerW / containerH;
         var innerAR = innerW / innerH;
@@ -44,6 +44,8 @@ define([ 'util/PubSub', 'padControls' ], function (PubSub, padControls) {
         // Keyboard controls
         var ACTION_KEYS = [ sp.Keyboard.X, sp.Keyboard.SPACE ];
         stage.addEventListener(sp.KeyboardEvent.KEY_DOWN, function on_key_down(event) {
+            telemetry.record('input', { type: 'keyboard', keyCode: event.keyCode });
+
             switch (event.keyCode) {
             case sp.Keyboard.LEFT:  ev.moveCursor.publish(-1,  0); break;
             case sp.Keyboard.RIGHT: ev.moveCursor.publish(+1,  0); break;
@@ -92,6 +94,8 @@ define([ 'util/PubSub', 'padControls' ], function (PubSub, padControls) {
         );
         function mouseDown(event) {
             if (actionRegion.contains(event.localX, event.localY)) {
+                telemetry.record('input', { type: 'padAction' });
+
                 ev.doAction.publish();
             }
         }

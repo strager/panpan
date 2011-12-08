@@ -9,10 +9,20 @@ define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/leve
 
     function game(stage) {
         var screen = new ScreenView(stage);
+        screen.events.moveCursor.subscribe(function (dx, dy) {
+            telemetry.record('move', { dx: dx, dy: dy });
+        });
+        screen.events.doAction.subscribe(function () {
+            telemetry.record('doAction', { });
+        });
+
         var particleEngine = new ParticleEngine();
         screen.setParticleEngine(particleEngine);
 
         var view = new PlayfieldView();
+        view.events.blockHoldMove.subscribe(function (x, y, oldX, oldY) {
+            telemetry.record('holdMove', { x: x, y: y, oldX: oldX, oldY: oldY });
+        });
         screen.setPlayfield(view);
 
         var lastTime = null;

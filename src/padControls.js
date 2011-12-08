@@ -1,4 +1,4 @@
-define([ 'util/PubSub' ], function (PubSub) {
+define([ 'util/PubSub', 'telemetry' ], function (PubSub, telemetry) {
     function padControls(mc, options) {
         options = extendDefault({ }, {
             center: null,
@@ -37,6 +37,8 @@ define([ 'util/PubSub' ], function (PubSub) {
 
             var x = event.localX - center.x;
             var y = event.localY - center.y;
+
+            telemetry.record('input', { type: 'pad', x: x, y: y });
 
             var dirX = 0, dirY = 0;
             if (Math.abs(x) > Math.abs(y)) {
