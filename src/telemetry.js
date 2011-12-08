@@ -1,4 +1,4 @@
-define([ 'config', 'q' ], function (config, Q) {
+define([ 'config', 'q', 'session' ], function (config, Q, session) {
     var records = [ ];
 
     function record(name, data) {
@@ -56,11 +56,14 @@ define([ 'config', 'q' ], function (config, Q) {
             // TODO Chunk reporting in case it's too large (4K limit?)
 
             var reports = queue.slice();
-            console.log('TELEMETRY', JSON.stringify(reports).length, reports);
+            var data = { id: session.getSessionID(), r: reports };
+
+            // Handy telemetry debug line
+            //console.log('TELEMETRY', JSON.stringify(data).length, data);
 
             var req = new sp.URLRequest(config.telemetry.url);
             req.method = 'POST';
-            req.data = JSON.stringify(reports);
+            req.data = JSON.stringify(data);
 
             var loader = new sp.URLLoader();
             loader.load(req);

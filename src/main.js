@@ -1,5 +1,7 @@
-define([ 'asset', 'game', 'telemetry', 'q' ], function (asset, game, telemetry, Q) {
+define([ 'asset', 'game', 'telemetry', 'q', 'session' ], function (asset, game, telemetry, Q, session) {
     function main(stage) {
+        telemetry.record('session_info', session.getSessionInformation());
+
         stage.frameRate = 60;
 
         function flushTelemetryLoop() {
