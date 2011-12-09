@@ -226,9 +226,9 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldController.prototype.isWin = function isWin() {
-        var empty = this.model.blocks.every(function (x) {
-            return x === blockModel.EMPTY;
-        });
+        var empty = this.model.blocks.every(function (_, i) {
+            return !this.model.canBlockMove(i);
+        }, this);
 
         if (empty) {
             return true;

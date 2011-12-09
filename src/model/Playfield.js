@@ -210,6 +210,10 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldModel.prototype.canBlockFall = function canBlockFall(index) {
+        if (!this.canBlockMove(index)) {
+            return false;
+        }
+
         var fellIndex = index - this.width;
         if (fellIndex < 0) {
             // Off edge of screen
@@ -225,6 +229,10 @@ define([ 'model/block' ], function (blockModel) {
 
         // We're clear for take-off
         return true;
+    };
+
+    PlayfieldModel.prototype.canBlockMove = function canBlockMove(index) {
+        return this.blocks[index] !== blockModel.SOLID;
     };
 
     PlayfieldModel.prototype.isSettled = function isSettled() {
@@ -245,7 +253,8 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldModel.prototype.canSwapBlock = function canSwapBlock(index) {
-        return this.blockDestroyTimers[index] === 0;
+        return this.blockDestroyTimers[index] === 0
+            && this.canBlockMove(index);
     };
 
     PlayfieldModel.prototype.swapTimer = function swapTimer(index) {

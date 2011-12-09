@@ -1,5 +1,5 @@
 define([ 'asset' ], function (asset) {
-    var classNames = [ null, 'BlockA', 'BlockB', 'BlockC', 'BlockD' ];
+    var classNames = [ null, 'BlockA', 'BlockB', 'BlockC', 'BlockD', 'BlockE', 'BlockS' ];
 
     function fromModel(block, options) {
         var className = classNames[block];
