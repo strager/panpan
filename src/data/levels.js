@@ -68,6 +68,19 @@ define([ ], function () {
         }, {
             width: 6,
             height: 6,
+            maxTurns: 2,
+            minStreakSize: 3,
+            blocks: [
+                0,3,2,0,2,2,
+                0,0,3,0,0,0,
+                0,0,0,0,0,0,
+                0,0,6,0,0,0,
+                0,0,2,0,0,0,
+                0,0,3,0,0,0,
+            ]
+        }, {
+            width: 6,
+            height: 6,
             minStreakSize: 3,
             maxTurns: 3,
             blocks: [
@@ -81,6 +94,19 @@ define([ ], function () {
         }, {
             width: 6,
             height: 6,
+            maxTurns: 4,
+            minStreakSize: 3,
+            blocks: [
+                4,6,6,1,1,0,
+                0,3,4,3,1,6,
+                0,6,0,0,3,6,
+                0,4,0,0,0,0,
+                0,0,0,0,0,0,
+                0,0,0,0,0,0,
+            ]
+        }, {
+            width: 6,
+            height: 6,
             maxTurns: 3,
             minStreakSize: 3,
             blocks: [
@@ -89,19 +115,6 @@ define([ ], function () {
                 0,1,1,0,2,0,
                 0,0,4,0,1,0,
                 0,0,1,0,0,0,
-                0,0,0,0,0,0,
-            ]
-        }, {
-            width: 6,
-            height: 6,
-            maxTurns: 1,
-            minStreakSize: 3,
-            blocks: [
-                0,0,2,0,2,2,
-                0,0,0,0,0,0,
-                0,0,6,0,0,0,
-                0,0,2,0,0,0,
-                0,0,0,0,0,0,
                 0,0,0,0,0,0,
             ]
         }
