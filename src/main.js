@@ -15,7 +15,10 @@ define([ 'asset', 'game', 'telemetry', 'q', 'session' ], function (asset, game, 
 
         flushTelemetryLoop();
 
-        asset.load('main.swf').then(function () {
+        Q.all([
+            asset.load('main.swf'),
+            asset.load('characters.swf')
+        ]).then(function () {
             game(stage);
         }).fail(die);
     }

@@ -1,4 +1,14 @@
 define([ ], function () {
+    function gotoAndPlay(mc, label) {
+        var hasLabel = mc.currentLabels.some(function (label) {
+            return label.name === label;
+        });
+
+        if (hasLabel) {
+            mc.gotoAndPlay(label);
+        }
+    }
+
     function button(mc, clickCallback) {
         var tpid = null;
         var active = false;
@@ -19,7 +29,7 @@ define([ ], function () {
         function remove() {
             removeAllListeners();
             if (active) {
-                mc.gotoAndPlay('up');
+                gotoAndPlay(mc, 'up');
             }
         }
 
@@ -33,7 +43,7 @@ define([ ], function () {
 
             removeListeners();
 
-            mc.gotoAndPlay('up');
+            gotoAndPlay(mc, 'up');
         }
 
         function upInside(event) {
@@ -46,7 +56,7 @@ define([ ], function () {
 
             removeListeners();
 
-            mc.gotoAndPlay('click');
+            gotoAndPlay(mc, 'click');
             clickCallback();
         }
 
@@ -57,7 +67,7 @@ define([ ], function () {
             active = true;
             tpid = event.touchPointID;
 
-            mc.gotoAndPlay('down');
+            gotoAndPlay(mc, 'down');
 
             mc.stage.addEventListener(sp.MouseEvent.MOUSE_UP, upOutside);
             mc.stage.addEventListener(sp.TouchEvent.TOUCH_END, upOutside);

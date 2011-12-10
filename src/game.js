@@ -1,4 +1,4 @@
-define([ 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
+define([ 'data/cutscenes', 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (cutscenes, PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
     var GameStateMachine = stateMachine([
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
