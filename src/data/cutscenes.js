@@ -1,4 +1,4 @@
-define([ 'model/Cutscene', 'q', 'view/Dialog' ], function (Cutscene, Q, DialogView) {
+define([ 'model/Cutscene', 'q' ], function (Cutscene, Q) {
     function seq(fns) {
         // Sequences promise functions together serially
         // like Q.when(fns[0]())
@@ -11,19 +11,18 @@ define([ 'model/Cutscene', 'q', 'view/Dialog' ], function (Cutscene, Q, DialogVi
     }
 
     return {
-        intro: function intro(stage) {
-            var dialog = new DialogView();
-            stage.addChild(dialog.mc);
+        intro: function intro(cutscene) {
+            var d = cutscene.dialog;
 
             return seq([
                 function () {
-                    dialog.setTextNow('Hello, world!');
-                    dialog.showPageIndicator();
-                    return Cutscene.waitForPublish(dialog.events.page);
+                    d.setTextNow('Hello, world!');
+                    d.showPageIndicator();
+                    return Cutscene.waitForPublish(d.events.page);
                 },
                 function () {
-                    dialog.transitionTextTo('This is a cool test');
-                    return Cutscene.waitForPublish(dialog.events.page);
+                    d.transitionTextTo('This is a cool test');
+                    return Cutscene.waitForPublish(d.events.page);
                 }
             ]);
         }

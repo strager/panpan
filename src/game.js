@@ -1,5 +1,6 @@
-define([ 'data/cutscenes', 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (cutscenes, PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
+define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (cutscenes, CutsceneView, PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
     var GameStateMachine = stateMachine([
+        { name: 'cutscene', from: 'none',    to: 'none'    }, // lol
         { name: 'start',    from: 'none',    to: 'playing' },
         { name: 'fail',     from: 'playing', to: 'failed'  },
         { name: 'retry',    from: 'failed',  to: 'playing' },
@@ -169,10 +170,21 @@ define([ 'data/cutscenes', 'model/Playfield', 'view/Playfield', 'controller/Play
                 clearHandlers();
 
                 load();
+            },
+
+            on_cutscene: function on_cutscene(cutscene) {
+                var view = new CutsceneView();
+                screen.setCutscene(view);
+
+                return cutscene(view).then(function () {
+                    screen.clearCutscene();
+                });
             }
         });
 
-        Q.fail(sm.start(), die);
+        sm.cutscene(cutscenes.intro)
+            .then(sm.start.bind(sm))
+            .fail(die);
     }
 
     return game;

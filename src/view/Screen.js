@@ -19,10 +19,12 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         this.popupLayerMc = new sp.Sprite();
         this.particlesLayerMc = new sp.Sprite();
         this.playfieldLayerMc = new sp.Sprite();
+        this.cutsceneLayerMC = new sp.Sprite();
 
         this.mc = new sp.Sprite();
         this.mc.addChild(this.playfieldLayerMc);
         this.mc.addChild(this.particlesLayerMc);
+        this.mc.addChild(this.cutsceneLayerMC);
         this.mc.addChild(this.popupLayerMc);
 
         stage.addChild(this.mc);
@@ -138,6 +140,20 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
     Screen.prototype.clearPopup = function clearPopup() {
         while (this.popupLayerMc.children) {
             this.popupLayerMc.removeChildAt(0);
+        }
+    };
+
+    Screen.prototype.setCutscene = function setCutscene(cutscene) {
+        this.clearCutscene();
+
+        // TODO Cutscene scaling
+
+        this.cutsceneLayerMC.addChild(cutscene.mc);
+    };
+
+    Screen.prototype.clearCutscene = function clearCutscene() {
+        while (this.cutsceneLayerMC.children) {
+            this.cutsceneLayerMC.removeChildAt(0);
         }
     };
 
