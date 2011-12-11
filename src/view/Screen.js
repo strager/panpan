@@ -109,8 +109,11 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
 
         // Touch controls (depends upon playfield and screen
         // dimensions)
-        if (this.controls) {
-            this.controls.remove();
+        if (this.actionControls) {
+            this.actionControls.remove();
+        }
+        if (this.directionControls) {
+            this.directionControls.remove();
         }
 
         var ev = this.events;
@@ -119,34 +122,31 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         var stageHeight = this.stage.stageHeight;
         var bounds = mc.getBounds();
 
-        var actionRegion = new sp.Rectangle(
+        var actionControlsRegion = new sp.Rectangle(
             bounds.right, 0,
             stageWidth - bounds.right, stageHeight
         );
-        function mouseDown(event) {
-            if (actionRegion.contains(event.localX, event.localY)) {
-                telemetry.record('input', { type: 'padAction' });
+        this.actionControls = padControls(this.stage, {
+            region: actionControlsRegion
+        });
+        this.actionControls.events.action.subscribe(function () {
+            ev.doAction.publish();
+        });
 
-                ev.doAction.publish();
-            }
-        }
-        this.stage.addEventListener(sp.MouseEvent.MOUSE_DOWN, mouseDown);
-        this.stage.addEventListener(sp.TouchEvent.TOUCH_BEGIN, mouseDown);
-
-        var controlsRegion = new sp.Rectangle(
+        var directionControlsRegion = new sp.Rectangle(
             0, 0,
             bounds.left, stageHeight
         );
-        this.controls = padControls(this.stage, {
+        this.directionControls = padControls(this.stage, {
             center: new sp.Point(
-                (controlsRegion.left + controlsRegion.right) * 0.5,
-                (controlsRegion.top + controlsRegion.bottom) * 0.7
+                (directionControlsRegion.left + directionControlsRegion.right) * 0.5,
+                (directionControlsRegion.top + directionControlsRegion.bottom) * 0.7
             ),
-            radius: controlsRegion.width * 0.4,
+            radius: directionControlsRegion.width * 0.4,
             ignoreRadius: 0,
-            region: controlsRegion
+            region: directionControlsRegion
         });
-        this.controls.events.direction.subscribe(function (dx, dy) {
+        this.directionControls.events.direction.subscribe(function (dx, dy) {
             ev.moveCursor.publish(dx, -dy);
         });
     };

@@ -40,6 +40,8 @@ define([ 'util/PubSub', 'telemetry' ], function (PubSub, telemetry) {
 
             telemetry.record('input', { type: 'pad', x: x, y: y });
 
+            events.action.publish();
+
             var dirX = 0, dirY = 0;
             if (Math.abs(x) > Math.abs(y)) {
                 dirX = x > 0 ? 1 : -1;
@@ -91,7 +93,8 @@ define([ 'util/PubSub', 'telemetry' ], function (PubSub, telemetry) {
         mc.addEventListener(sp.TouchEvent.TOUCH_BEGIN, down);
 
         var events = {
-            direction: new PubSub()
+            direction: new PubSub(),
+            action: new PubSub()
         };
 
         return {
