@@ -78,7 +78,8 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
 
         // Playfield scales to fill entire screen
         var scale = fitRectangleScale(stageWidth, stageHeight, mc.width, mc.height);
-        mc.scaleX = mc.scaleY = scale;
+        mc.scaleX *= scale;
+        mc.scaleY *= scale;
 
         this.playfieldLayerMc.addChild(mc);
 
@@ -120,6 +121,12 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         this.controls.events.direction.subscribe(function (dx, dy) {
             ev.moveCursor.publish(dx, -dy);
         });
+    };
+
+    Screen.prototype.clearPlayfield = function clearPlayfield() {
+        while (this.playfieldLayerMc.children) {
+            this.playfieldLayerMc.removeChildAt(0);
+        }
     };
 
     Screen.prototype.setPopup = function setPopup(popup) {

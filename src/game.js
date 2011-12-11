@@ -24,7 +24,6 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
         view.events.blockHoldMove.subscribe(function (x, y, oldX, oldY) {
             telemetry.record('holdMove', { x: x, y: y, oldX: oldX, oldY: oldY });
         });
-        screen.setPlayfield(view);
 
         var lastTime = null;
         stage.addEventListener(sp.Event.ENTER_FRAME, function () {
@@ -157,6 +156,7 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
             },
             enter_playing: function enter_playing() {
                 screen.clearPopup();
+                screen.setPlayfield(view);
             },
 
             on_start: function on_start() {
