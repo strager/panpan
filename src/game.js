@@ -176,7 +176,7 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
                 var view = new CutsceneView();
                 screen.setCutscene(view);
 
-                return cutscene(view).then(function () {
+                return Q.when(cutscene(view), function () {
                     screen.clearCutscene();
                 });
             }

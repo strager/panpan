@@ -1,4 +1,7 @@
 define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padControls, telemetry) {
+    var DOTS_PER_INCH = 92; // TODO
+    var DOTS_PER_CM = DOTS_PER_INCH / 2.54;
+
     function fitRectangleScale(containerW, containerH, innerW, innerH) {
         var containerAR = containerW / containerH;
         var innerAR = innerW / innerH;
@@ -11,6 +14,18 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         } else {
             return containerH * ratio / innerW;
         }
+    }
+
+    function center(x, align, width) {
+        return (x + width / 2) - width * align;
+    }
+
+    function align(containerW, innerW, alignment) {
+        // Returns center after alignment
+        // 0   => innerW / 2
+        // 0.5 => containerW / 2
+        // 1   => containerW - innerW / 2
+        return containerW * alignment + (innerW / 2 + -alignment * innerW);
     }
 
     function Screen(stage) {
@@ -28,12 +43,6 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         this.mc.addChild(this.popupLayerMc);
 
         stage.addChild(this.mc);
-
-        this.popupX = stage.stageWidth / 2;
-        this.popupY = stage.stageHeight / 2;
-
-        this.playfieldX = stage.stageWidth / 2;
-        this.playfieldY = stage.stageHeight;
 
         var ev = this.events = {
             moveCursor: new PubSub(),
@@ -68,19 +77,34 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         this.particlesLayerMc.addChild(particleEngine.mc);
     };
 
-    Screen.prototype.setPlayfield = function setPlayfield(playfield) {
-        var stageWidth = this.stage.stageWidth;
-        var stageHeight = this.stage.stageHeight;
+    Screen.prototype.alignElement = function alignElement(mc, alignX, alignY) {
+        this.alignElementX(mc, alignX);
+        this.alignElementY(mc, alignY);
+    };
 
-        var mc = playfield.mc;
-        mc.x = this.playfieldX;
-        mc.y = this.playfieldY;
+    Screen.prototype.alignElementX = function alignElementX(mc, alignX) {
+        var bounds = mc.getBounds();
+        var cx = align(this.stage.stageWidth, bounds.width, alignX);
+        mc.x += cx - bounds.left - bounds.width / 2;
+    };
 
-        // Playfield scales to fill entire screen
-        var scale = fitRectangleScale(stageWidth, stageHeight, mc.width, mc.height);
+    Screen.prototype.alignElementY = function alignElementY(mc, alignY) {
+        var bounds = mc.getBounds();
+        var cy = align(this.stage.stageHeight, bounds.height, alignY);
+        mc.y += cy - bounds.top - bounds.height / 2;
+    };
+
+    Screen.prototype.scaleElement = function scaleElement(mc, screenScale) {
+        var scale = screenScale * fitRectangleScale(this.stage.stageWidth, this.stage.stageHeight, mc.width, mc.height);
         mc.scaleX *= scale;
         mc.scaleY *= scale;
+    };
 
+    Screen.prototype.setPlayfield = function setPlayfield(playfield) {
+        var mc = playfield.mc;
+        this.scaleElement(mc, 1);
+        this.alignElementY(mc, 0.5);
+        mc.x = this.stage.stageWidth / 2;
         this.playfieldLayerMc.addChild(mc);
 
         // Touch controls (depends upon playfield and screen
@@ -91,9 +115,13 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
 
         var ev = this.events;
 
+        var stageWidth = this.stage.stageWidth;
+        var stageHeight = this.stage.stageHeight;
+        var bounds = mc.getBounds();
+
         var actionRegion = new sp.Rectangle(
-            mc.getBounds().right, 0,
-            stageWidth - mc.getBounds().right, stageHeight
+            bounds.right, 0,
+            stageWidth - bounds.right, stageHeight
         );
         function mouseDown(event) {
             if (actionRegion.contains(event.localX, event.localY)) {
@@ -107,7 +135,7 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
 
         var controlsRegion = new sp.Rectangle(
             0, 0,
-            mc.getBounds().left, stageHeight
+            bounds.left, stageHeight
         );
         this.controls = padControls(this.stage, {
             center: new sp.Point(
@@ -133,14 +161,8 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
         this.clearPopup();
 
         var mc = popup.mc;
-        mc.x = this.popupX;
-        mc.y = this.popupY;
-
-        // Pop-ups scale to fill at most 50% of the screen
-        // WTB physical dimensions
-        var scale = 0.5 * fitRectangleScale(this.stage.stageWidth, this.stage.stageHeight, mc.width, mc.height);
-        mc.scaleX = mc.scaleY = scale;
-
+        this.scaleElement(mc, 0.5);
+        this.alignElement(mc, 0.5, 0.5);
         this.popupLayerMc.addChild(mc);
     };
 
@@ -153,8 +175,7 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
     Screen.prototype.setCutscene = function setCutscene(cutscene) {
         this.clearCutscene();
 
-        // TODO Cutscene scaling
-
+        cutscene.reorient(this);
         this.cutsceneLayerMC.addChild(cutscene.mc);
     };
 

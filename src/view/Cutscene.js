@@ -14,5 +14,10 @@ define([ 'asset', 'view/Dialog' ], function (asset, DialogView) {
         this.dialog = new DialogView(this.mc.dialogBox);
     }
 
+    CutsceneView.prototype.reorient = function reorient(screen) {
+        screen.scaleElement(this.dialog.mc, 0.7);
+        screen.alignElement(this.dialog.mc, 1, 1);
+    };
+
     return CutsceneView;
 });
