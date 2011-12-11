@@ -116,6 +116,10 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
             this.directionControls.remove();
         }
 
+        // FIXME Pad controls are not working due to bounding box issues
+        // https://www.pivotaltracker.com/story/show/22127733
+        return;
+
         var ev = this.events;
 
         var stageWidth = this.stage.stageWidth;
