@@ -176,6 +176,11 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
                 var view = new CutsceneView();
                 screen.setCutscene(view);
 
+                handlers.push(screen.events.doAction.subscribe(function () {
+                    // El HACK
+                    view.dialog.events.page.publish();
+                }));
+
                 return Q.when(cutscene(view), function () {
                     screen.clearCutscene();
                 });

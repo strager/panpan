@@ -16,12 +16,15 @@ define([ 'model/Cutscene', 'q' ], function (Cutscene, Q) {
 
             return seq([
                 function () {
-                    d.setTextNow('Hello, world!');
+                    if (sp.Capabilities.input.touchScreen) {
+                        d.setTextNow("Slide blocks horizontally by\ndragging on the screen!\n(Tap to continue.)");
+                    } else if (sp.Capabilities.input.keyboard) {
+                        d.setTextNow("Use the arrow keys and the \"X\" key!\n(Press \"X\" to continue.)");
+                    } else {
+                        d.setTextNow("Well, I don't know what to tell you...");
+                    }
+
                     d.showPageIndicator();
-                    return Cutscene.waitForPublish(d.events.page);
-                },
-                function () {
-                    d.transitionTextTo('This is a cool test');
                     return Cutscene.waitForPublish(d.events.page);
                 }
             ]);
