@@ -69,6 +69,32 @@ define([ ], function () {
             width: 6,
             height: 6,
             minStreakSize: 3,
+            maxTurns: 1,
+            blocks: [
+                2,2,1,2,1,1,
+                0,0,0,1,0,0,
+                0,0,0,1,0,0,
+                0,0,0,0,0,0,
+                0,0,0,0,0,0,
+                0,0,0,0,0,0,
+            ]
+        }, {
+            width: 6,
+            height: 6,
+            minStreakSize: 3,
+            maxTurns: 2,
+            blocks: [
+                0,3,3,4,3,0,
+                0,0,0,4,3,0,
+                0,0,0,3,4,0,
+                0,0,0,0,0,0,
+                0,0,0,0,0,0,
+                0,0,0,0,0,0,
+            ]
+        }, {
+            width: 6,
+            height: 6,
+            minStreakSize: 3,
             maxTurns: 2,
             blocks: [
                 0,1,1,2,3,0,
