@@ -246,7 +246,7 @@ define([ 'model/block' ], function (blockModel) {
         }
     };
 
-    PlayfieldController.prototype.isLoss = function isLoss() {
+    PlayfieldController.prototype.isMoveLoss = function isMoveLoss() {
         if (this.canMakeMove()) {
             return false;
         }
@@ -257,6 +257,22 @@ define([ 'model/block' ], function (blockModel) {
 
         // If there are any blocks left, we lost.
         return !empty;
+    };
+
+    PlayfieldController.prototype.isMatchLoss = function isMatchLoss() {
+        var histogram = { };
+        this.model.blocks.forEach(function (x) {
+            histogram[x] = (histogram[x] || 0) + 1;
+        });
+
+        var ok = blockModel.moveable.every(function (x) {
+            var count = histogram[x] || 0;
+            // Any time there are only 1 or 2 blocks (for
+            // match-3) of one colour, it's impossible to win.
+            return count === 0 || count >= this.model.minStreakSize;
+        }, this);
+
+        return !ok;
     };
 
     PlayfieldController.prototype.canMakeMove = function canMakeMove() {

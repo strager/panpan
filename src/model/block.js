@@ -9,10 +9,8 @@ define([ ], function () {
         SOLID: 6
     };
 
-    var nonEmpty = [ block.A, block.B, block.C, block.D ];
-    block.randomNonEmpty = function block_randomNonEmpty() {
-        return nonEmpty[Math.floor(Math.random() * nonEmpty.length)];
-    };
+    var moveable = [ block.A, block.B, block.C, block.D ];
+    block.moveable = moveable;
 
     return block;
 });

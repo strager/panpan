@@ -1,11 +1,13 @@
 define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (cutscenes, CutsceneView, PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
     var GameStateMachine = stateMachine([
-        { name: 'cutscene', from: 'none',    to: 'none'    }, // lol
-        { name: 'start',    from: 'none',    to: 'playing' },
-        { name: 'fail',     from: 'playing', to: 'failed'  },
-        { name: 'retry',    from: 'failed',  to: 'playing' },
-        { name: 'win',      from: 'playing', to: 'won'     },
-        { name: 'continue', from: 'won',     to: 'none'    }
+        { name: 'cutscene',   from: 'none',          to: 'none'          }, // lol
+        { name: 'start',      from: 'none',          to: 'playing'       },
+        { name: 'fail_match', from: 'playing',       to: 'failed_match'  },
+        { name: 'fail_moves', from: 'playing',       to: 'failed_moves'  },
+        { name: 'retry',      from: 'failed_match',  to: 'playing'       },
+        { name: 'retry',      from: 'failed_moves',  to: 'playing'       },
+        { name: 'win',        from: 'playing',       to: 'won'           },
+        { name: 'continue',   from: 'won',           to: 'none'          }
     ]);
 
     function game(stage) {
@@ -94,9 +96,12 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
                     if (c.isWin()) {
                         clearTimeout(timeout);
                         Q.fail(sm.win(), die);
-                    } else if (c.isLoss()) {
+                    } else if (c.isMoveLoss()) {
                         clearTimeout(timeout);
-                        Q.fail(sm.fail(), die);
+                        Q.fail(sm.fail_moves(), die);
+                    } else if (c.isMatchLoss()) {
+                        clearTimeout(timeout);
+                        Q.fail(sm.fail_match(), die);
                     }
                 }
             }
@@ -112,8 +117,8 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
         }
 
         var sm = new GameStateMachine('none', {
-            enter_failed: function enter_failed() {
-                telemetry.record('fail_level', { level: currentLevelIndex });
+            enter_failed_moves: function enter_failed_moves() {
+                telemetry.record('fail_level_moves', { level: currentLevelIndex });
 
                 clearHandlers();
 
@@ -125,7 +130,24 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
 
                 handlers.push(screen.events.doAction.subscribe(on_retry));
 
-                screen.setPopup(new PopupView('failed', {
+                screen.setPopup(new PopupView('failed_moves', {
+                    on_retry: on_retry
+                }));
+            },
+            enter_failed_match: function enter_failed_match() {
+                telemetry.record('fail_level_match', { level: currentLevelIndex });
+
+                clearHandlers();
+
+                function on_retry() {
+                    clearHandlers();
+
+                    Q.fail(sm.retry(), die);
+                }
+
+                handlers.push(screen.events.doAction.subscribe(on_retry));
+
+                screen.setPopup(new PopupView('failed_match', {
                     on_retry: on_retry
                 }));
             },
