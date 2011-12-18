@@ -11,6 +11,7 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
 
         { name: 'level_select', from: 'playing',      to: 'level_select' },
         { name: 'level_select', from: 'none',         to: 'level_select' },
+        { name: 'cutscene',     from: 'level_select', to: 'level_select' }, // lol
         { name: 'start',        from: 'level_select', to: 'playing'      }
     ]);
 
@@ -211,19 +212,20 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
                 });
             },
 
-            on_level_select: function on_level_select() {
-                var view = new LevelSelectView({ levels: levels });
+            on_level_select: function on_level_select(world) {
+                var view = new LevelSelectView(world);
                 screen.setMenu(view)
 
                 view.events.select.subscribe(function (levelID) {
                     screen.clearMenu();
-                    sm.start(levelID);
+                    sm.cutscene(cutscenes.intro)
+                        .then(sm.start.bind(sm, levelID))
+                        .fail(die);
                 });
             }
         });
 
-        sm.cutscene(cutscenes.intro)
-            .then(sm.level_select.bind(sm))
+        sm.level_select({ levels: levels })
             .fail(die);
     }
 
