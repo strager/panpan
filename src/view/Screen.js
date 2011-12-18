@@ -31,14 +31,17 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
     function Screen(stage) {
         this.stage = stage;
 
+        // Ugly! FIXME
         this.popupLayerMc = new sp.Sprite();
         this.particlesLayerMc = new sp.Sprite();
         this.playfieldLayerMc = new sp.Sprite();
         this.cutsceneLayerMC = new sp.Sprite();
+        this.menuLayerMC = new sp.Sprite();
 
         this.mc = new sp.Sprite();
         this.mc.addChild(this.playfieldLayerMc);
         this.mc.addChild(this.particlesLayerMc);
+        this.mc.addChild(this.menuLayerMC);
         this.mc.addChild(this.cutsceneLayerMC);
         this.mc.addChild(this.popupLayerMc);
 
@@ -186,6 +189,19 @@ define([ 'util/PubSub', 'padControls', 'telemetry' ], function (PubSub, padContr
     Screen.prototype.clearCutscene = function clearCutscene() {
         while (this.cutsceneLayerMC.children) {
             this.cutsceneLayerMC.removeChildAt(0);
+        }
+    };
+
+    Screen.prototype.setMenu = function setMenu(menu) {
+        this.clearMenu();
+
+        menu.reorient(this);
+        this.menuLayerMC.addChild(menu.mc);
+    };
+
+    Screen.prototype.clearMenu = function clearMenu() {
+        while (this.menuLayerMC.children) {
+            this.menuLayerMC.removeChildAt(0);
         }
     };
 

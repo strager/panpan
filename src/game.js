@@ -1,4 +1,4 @@
-define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles' ], function (cutscenes, CutsceneView, PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine) {
+define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield', 'controller/Playfield', 'data/levels', 'util/stateMachine', 'view/Popup', 'q', 'view/Screen', 'telemetry', 'view/Particles', 'view/LevelSelect' ], function (cutscenes, CutsceneView, PlayfieldModel, PlayfieldView, PlayfieldController, levels, stateMachine, PopupView, Q, ScreenView, telemetry, ParticleEngine, LevelSelectView) {
     var GameStateMachine = stateMachine([
         { name: 'cutscene',   from: 'none',          to: 'none'          }, // lol
         { name: 'start',      from: 'none',          to: 'playing'       },
@@ -7,7 +7,11 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
         { name: 'retry',      from: 'failed_match',  to: 'playing'       },
         { name: 'retry',      from: 'failed_moves',  to: 'playing'       },
         { name: 'win',        from: 'playing',       to: 'won'           },
-        { name: 'continue',   from: 'won',           to: 'none'          }
+        { name: 'continue',   from: 'won',           to: 'none'          },
+
+        { name: 'level_select', from: 'playing',      to: 'level_select' },
+        { name: 'level_select', from: 'none',         to: 'level_select' },
+        { name: 'start',        from: 'level_select', to: 'playing'      }
     ]);
 
     function game(stage) {
@@ -38,7 +42,7 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
             lastTime = now;
         });
 
-        var currentLevelIndex = -1;
+        var currentLevelIndex = null;
 
         function load() {
             telemetry.record('load_level', { level: currentLevelIndex });
@@ -156,7 +160,8 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
 
                 clearHandlers();
 
-                if (currentLevelIndex + 1 >= levels.length) {
+                var nextLevelIndex = currentLevelIndex + 1;
+                if (nextLevelIndex >= levels.length) {
                     screen.setPopup(new PopupView('end', { }));
                 } else {
                     function on_continue() {
@@ -164,7 +169,7 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
 
                         Q.when(
                             sm['continue'](),
-                            sm.start.bind(sm),
+                            sm.start.bind(sm, nextLevelIndex),
                             die
                         );
                     }
@@ -181,16 +186,14 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
                 screen.setPlayfield(view);
             },
 
-            on_start: function on_start() {
+            on_start: function on_start(levelIndex) {
                 clearHandlers();
-
-                ++currentLevelIndex;
+                currentLevelIndex = levelIndex;
                 load();
             },
 
             on_retry: function on_retry() {
                 clearHandlers();
-
                 load();
             },
 
@@ -206,11 +209,21 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
                 return Q.when(cutscene(view), function () {
                     screen.clearCutscene();
                 });
+            },
+
+            on_level_select: function on_level_select() {
+                var view = new LevelSelectView({ });
+                screen.setMenu(view)
+
+                view.events.select.subscribe(function (levelID) {
+                    screen.clearMenu();
+                    sm.start(levelID);
+                });
             }
         });
 
         sm.cutscene(cutscenes.intro)
-            .then(sm.start.bind(sm))
+            .then(sm.level_select.bind(sm))
             .fail(die);
     }
 
