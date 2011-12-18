@@ -4,8 +4,6 @@ define([ 'asset', 'util/PubSub', 'ui' ], function (asset, PubSub, ui) {
             themeFile: 'main.swf'
         }, options);
 
-        // TODO Only show levels in world
-
         var themeFile = this.themeFile;
 
         var LevelSelectPageMovieClip = asset.get(themeFile + ':LevelSelectPage');
@@ -16,15 +14,21 @@ define([ 'asset', 'util/PubSub', 'ui' ], function (asset, PubSub, ui) {
         page.children.forEach(function (child) {
             var match = re.exec(child.name);
             if (match) {
-                var levelID = +match[1] - 1;
-                child.levelID = levelID;
-                child.text.text = levelID + 1;
+                var levelIndex = +match[1] - 1;
+                var level = world.levels[levelIndex];
+                if (!level) {
+                    child.visible = false;
+                    return;
+                }
+
+                child.levelIndex = levelIndex;
+                child.text.text = levelIndex + 1; // Humans are 1-based
                 child.mouseChildren = false;
                 child.mouseEnabled = true;
 
                 // TODO Delegate
                 ui.button(child, function () {
-                    events.select.publish(child.levelID);
+                    events.select.publish(child.levelIndex);
                 });
             }
         });

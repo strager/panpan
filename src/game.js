@@ -212,7 +212,7 @@ define([ 'data/cutscenes', 'view/Cutscene', 'model/Playfield', 'view/Playfield',
             },
 
             on_level_select: function on_level_select() {
-                var view = new LevelSelectView({ });
+                var view = new LevelSelectView({ levels: levels });
                 screen.setMenu(view)
 
                 view.events.select.subscribe(function (levelID) {
