@@ -258,9 +258,7 @@ define([ 'model/block' ], function (blockModel) {
     };
 
     PlayfieldModel.prototype.swapTimer = function swapTimer(index) {
-        if (this.isBlockSettled(index)) {
-            this.blockFallTimers[index] = 200;
-        }
+        this.blockFallTimers[index] = 200;
     };
 
     PlayfieldModel.fromJSON = function fromJSON(json) {
